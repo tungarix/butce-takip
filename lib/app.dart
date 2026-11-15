@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'features/ayarlar/ayarlar_ekrani.dart';
+import 'features/hizli_giris/hizli_giris.dart';
 import 'features/islemler/islemler_ekrani.dart';
 import 'features/ozet/ozet_ekrani.dart';
 import 'ui_metin.dart';
@@ -42,6 +43,11 @@ class _KabukState extends State<Kabuk> {
     body: IndexedStack(
       index: _sekme,
       children: const [OzetEkrani(), IslemlerEkrani(), AyarlarEkrani()],
+    ),
+    floatingActionButton: FloatingActionButton(
+      tooltip: islemEkleEtiket,
+      onPressed: () => hizliGirisAc(context),
+      child: const Icon(Icons.add),
     ),
     bottomNavigationBar: NavigationBar(
       selectedIndex: _sekme,

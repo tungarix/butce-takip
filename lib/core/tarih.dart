@@ -27,3 +27,12 @@ int ayGunSayisi(int yil, int ay) => DateTime(yil, ay + 1, 0).day;
     son: ayAnahtari * 100 + ayGunSayisi(yil, ay),
   );
 }
+
+/// yyyymm'i [adim] ay ileri (+) ya da geri (-) kaydırır; yıl geçişini de karşılar.
+int ayKaydir(int ayAnahtari, int adim) {
+  final t = (ayAnahtari ~/ 100) * 12 + (ayAnahtari % 100 - 1) + adim;
+  return (t ~/ 12) * 100 + t % 12 + 1;
+}
+
+/// yyyymmdd -> yerel gün başı. [gunAnahtari]'nın tersi.
+DateTime gunTarihi(int gun) => DateTime(gun ~/ 10000, gun ~/ 100 % 100, gun % 100);

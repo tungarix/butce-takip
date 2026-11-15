@@ -1,0 +1,36 @@
+name: butce_takip
+description: "Bütçe Takip: hesapsız, tamamen çevrimdışı gelir-gider takibi (Android)."
+publish_to: 'none'
+
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # Sürümler habit-tracker-mobil ile aynı (pub önbelleğinden gelsin diye).
+  drift: 2.34.0
+  sqlite3_flutter_libs: 0.6.0+eol
+  drift_flutter: ^0.3.1
+  flutter_riverpod: ^3.3.2
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  drift_dev: 2.34.0
+  build_runner: ^2.15.0
+
+dependency_overrides:
+  # Referans projedeki gibi: path_provider_android 2.3+ JNI/NDK ister, burada gerekmiyor.
+  path_provider_android: '>=2.2.0 <2.3.0'
+  sqlite3: 3.3.3
+
+flutter:
+  uses-material-design: true

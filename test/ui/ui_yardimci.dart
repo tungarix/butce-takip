@@ -7,11 +7,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+AppDatabase? _acik;
+
 Future<AppDatabase> bellekDb() async {
   await initializeDateFormatting('tr_TR');
-  final db = AppDatabase(NativeDatabase.memory());
-  addTearDown(db.close);
-  return db;
+  return _acik = AppDatabase(NativeDatabase.memory());
 }
 
 void telefonBoyutu(WidgetTester tester) {
@@ -39,8 +39,11 @@ Future<void> bekle(WidgetTester tester, [int kare = 8]) async {
   }
 }
 
-/// Ağacı söker; drift akış zamanlayıcıları test bitmeden dolsun.
+/// Ağacı söker, DB'yi gerçek zamanda kapatır. addTearDown(db.close) sahte
+/// zamanda bitmeyip sqlite3 sonlandırıcılarını yarım kapalı bağlantıya sokuyordu.
 Future<void> temizle(WidgetTester tester) async {
   await tester.pumpWidget(const SizedBox());
   await bekle(tester, 2);
+  await tester.runAsync(() => _acik!.close());
+  _acik = null;
 }

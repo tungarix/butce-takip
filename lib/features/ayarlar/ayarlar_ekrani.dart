@@ -5,6 +5,7 @@ import '../../data/database/database.dart';
 import '../../data/providers.dart';
 import '../../ui_metin.dart';
 import 'kategoriler_ekrani.dart';
+import 'yedek_islemleri.dart';
 
 class AyarlarEkrani extends ConsumerWidget {
   const AyarlarEkrani({super.key});
@@ -23,6 +24,20 @@ class AyarlarEkrani extends ConsumerWidget {
             context,
             MaterialPageRoute<void>(builder: (_) => const KategorilerEkrani()),
           ),
+        ),
+        ListTile(
+          key: const ValueKey('yedekle'),
+          leading: const Icon(Icons.upload_file_outlined),
+          title: const Text(yedekleBaslik),
+          subtitle: const Text(yedekleAltyazi),
+          onTap: () => yedekle(context, ref),
+        ),
+        ListTile(
+          key: const ValueKey('geri-yukle'),
+          leading: const Icon(Icons.restore_outlined),
+          title: const Text(geriYukleBaslik),
+          subtitle: const Text(geriYukleAltyazi),
+          onTap: () => geriYukle(context, ref),
         ),
         SwitchListTile(
           key: const ValueKey('bildirim-anahtari'),

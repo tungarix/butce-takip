@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'data/providers.dart';
 import 'features/ayarlar/ayarlar_ekrani.dart';
 import 'features/hizli_giris/hizli_giris.dart';
 import 'features/islemler/islemler_ekrani.dart';
@@ -28,15 +30,34 @@ class ButceTakipApp extends StatelessWidget {
   );
 }
 
-class Kabuk extends StatefulWidget {
+class Kabuk extends ConsumerStatefulWidget {
   const Kabuk({super.key});
 
   @override
-  State<Kabuk> createState() => _KabukState();
+  ConsumerState<Kabuk> createState() => _KabukState();
 }
 
-class _KabukState extends State<Kabuk> {
+class _KabukState extends ConsumerState<Kabuk> with WidgetsBindingObserver {
   int _sekme = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // Gece yarısını geçip öne gelen uygulama eski günde kalmasın. Testte sabit gün
+  // override'ı yeniden hesaplanınca aynı değeri verir.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState durum) {
+    if (durum == AppLifecycleState.resumed) ref.invalidate(bugunProvider);
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(

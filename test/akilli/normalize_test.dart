@@ -25,8 +25,10 @@ void main() {
     test(
       'rakam ve noktalama atılır, boşluklar teklenir, kenarlar kırpılır',
       () {
-        expect(notNormalize('A101, Migros! 2x'), 'a migros x');
-        expect(notNormalize("Migros'a"), 'migrosa');
+        expect(notNormalize('A101, Migros! 2024'), 'a101 migros');
+        expect(notNormalize("Migros'a"), 'migros a');
+        expect(notNormalize('3 ekmek'), 'ekmek');
+        expect(notNormalize('2x süt'), '2x sut');
         expect(notNormalize('  Çok   boşluk\t\nvar '), 'cok bosluk var');
         expect(notNormalize('123 !?'), '');
         expect(notNormalize(''), '');
@@ -37,10 +39,12 @@ void main() {
   group('notSozcukleri', () {
     test('2 harften kısa sözcükler atılır, tekrarlar teke iner', () {
       expect(notSozcukleri('A101 Migros x market Market'), [
+        'a101',
         'migros',
         'market',
       ]);
       expect(notSozcukleri('b ab'), ['ab']);
+      expect(notSozcukleri("Migros'a"), ['migros']);
       expect(notSozcukleri('  '), isEmpty);
     });
   });

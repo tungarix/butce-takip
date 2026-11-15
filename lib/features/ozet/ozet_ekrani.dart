@@ -11,6 +11,7 @@ import '../../data/database/database.dart';
 import '../../data/providers.dart';
 import '../../ui_metin.dart';
 import '../ay_secici.dart';
+import '../ayarlar/yedek_islemleri.dart';
 import '../ayarlar/kategoriler_ekrani.dart';
 import '../hizli_giris/hizli_giris.dart';
 import '../ikonlar.dart';
@@ -116,6 +117,7 @@ class _OzetListesi extends StatelessWidget {
       // FAB son satırı kapatmasın.
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
       children: [
+        const _YedekKarti(),
         _Kart(
           anahtar: 'harcanan',
           baslik: buAyHarcanan,
@@ -414,6 +416,48 @@ class _TekrarKarti extends ConsumerWidget {
                 ],
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Yalnız Özet'te, 30 günden fazladır yedek alınmamışsa görünür. "Sonra" 7 gün erteler.
+class _YedekKarti extends ConsumerWidget {
+  const _YedekKarti();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(yedekHatirlatmaProvider)) return const SizedBox.shrink();
+    final db = ref.read(databaseProvider);
+    return Card(
+      key: const ValueKey('yedek-karti'),
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(yedekHatirlatmaMetni),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  key: const ValueKey('yedek-sonra'),
+                  onPressed: () => db.ayarYaz(
+                    yedekErtelemeAnahtari,
+                    '${gunEkle(ref.read(bugunProvider), 7)}',
+                  ),
+                  child: const Text(yedekSonraEtiket),
+                ),
+                FilledButton.tonal(
+                  key: const ValueKey('yedek-yedekle'),
+                  onPressed: () => yedekle(context, ref),
+                  child: const Text(yedekleBaslik),
+                ),
+              ],
+            ),
           ],
         ),
       ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../akilli/tekrar_tespit.dart';
 import '../core/tarih.dart';
 import '../platform/bildirimler.dart';
+import 'yedek.dart';
 import 'database/baglanti.dart';
 import 'database/database.dart';
 
@@ -76,3 +77,28 @@ final bildirimAcikProvider = StreamProvider<bool>(
 
 /// main.dart gerçek eklentiyi verir; varsayılan hiçbir şey yapmaz.
 final bildirimProvider = Provider<BildirimKapisi>((ref) => const BildirimYok());
+
+final _islemOzetiProvider = StreamProvider<({int sayi, int? ilk})>(
+  (ref) => ref.watch(databaseProvider).islemSayisiVeIlkIzle(),
+);
+
+final _sonYedekProvider = StreamProvider<String?>(
+  (ref) => ref.watch(databaseProvider).ayarIzle(sonYedekAnahtari),
+);
+
+final _yedekErtelemeProvider = StreamProvider<String?>(
+  (ref) => ref.watch(databaseProvider).ayarIzle(yedekErtelemeAnahtari),
+);
+
+/// Özet'teki yedek hatırlatma kartı görünsün mü.
+final yedekHatirlatmaProvider = Provider<bool>((ref) {
+  final ozet = ref.watch(_islemOzetiProvider).value;
+  if (ozet == null) return false;
+  return yedekHatirlatilsin(
+    islemSayisi: ozet.sayi,
+    bugun: ref.watch(bugunProvider),
+    sonYedekMs: int.tryParse(ref.watch(_sonYedekProvider).value ?? ''),
+    ilkIslemMs: ozet.ilk,
+    ertelemeGunu: int.tryParse(ref.watch(_yedekErtelemeProvider).value ?? ''),
+  );
+});

@@ -88,3 +88,22 @@ const bildirimAnahtariAltyazi = 'Kategori limiti %80 ve %100 dolunca haber ver';
 String uyariMetni(String ad, int esik) => esik >= 100
     ? '$ad bütçesi doldu (%$esik)'
     : "$ad bütçesinin %$esik'i doldu";
+
+// Yedek
+const yedekleBaslik = 'Yedekle';
+const yedekleAltyazi = 'Verilerini bir dosya olarak kaydet ya da paylaş';
+const geriYukleBaslik = 'Geri yükle';
+const geriYukleAltyazi = 'Bir yedek dosyasından verileri geri getir';
+const yedekHatirlatmaMetni =
+    'Verilerin yalnız bu telefonda. Yedek almak ister misin?';
+const yedekSonraEtiket = 'Sonra';
+const yedekHatasi = 'Yedek alınamadı. Tekrar dene.';
+const dosyaOkunamadi = 'Dosya okunamadı. Başka bir dosya seçmeyi dene.';
+const geriYuklemeBaslik = 'Geri yüklensin mi?';
+const geriYukleOnayEtiket = 'Geri yükle';
+String yedekOzeti(int islem, int kategori, String tarih) =>
+    'Bu yedekte $islem işlem, $kategori kategori var, tarihi $tarih. '
+    'Mevcut verilerin yerine geçecek.';
+const geriYuklendi = 'Yedek geri yüklendi.';
+const geriYuklemeBasarisiz =
+    'Geri yükleme yapılamadı, mevcut verilerin değişmedi.';

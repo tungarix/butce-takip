@@ -12,6 +12,9 @@ part 'database.g.dart';
 const bildirimAcikAnahtari = 'bildirim_acik'; // '0' kapalı; yoksa açık
 const izinSorulduAnahtari = 'bildirim_izin_soruldu';
 const tekrarRedOnEki = 'tekrar_red_'; // + tekrarAnahtari
+const sonYedekAnahtari = 'son_yedek'; // epoch ms
+const yedekErtelemeAnahtari =
+    'yedek_ertele'; // yyyymmdd; bu güne kadar hatırlatma yok
 
 enum AdHatasi { bos, ayni }
 
@@ -297,6 +300,15 @@ class AppDatabase extends _$AppDatabase {
         categories,
       )..where((c) => c.id.equals(id))).getSingleOrNull())?.name ??
       '';
+
+  /// İşlem sayısı ve ilk işlemin kayıt zamanı (epoch ms); yedek hatırlatması için.
+  Stream<({int sayi, int? ilk})> islemSayisiVeIlkIzle() {
+    final sayi = transactions.id.count();
+    final ilk = transactions.createdAt.min();
+    return (selectOnly(transactions)..addColumns([sayi, ilk]))
+        .watchSingle()
+        .map((r) => (sayi: r.read(sayi) ?? 0, ilk: r.read(ilk)));
+  }
 
   // settings: anahtar -> metin.
 

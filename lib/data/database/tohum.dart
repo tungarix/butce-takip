@@ -1,6 +1,5 @@
 // İlk kurulumda yazılan hazır kategoriler ve anahtar kelimeler.
-// Anahtar kelimeler notNormalize çıktısıyla birebir aynıdır (test kilitler). Rakam normalize'da atıldığı
-// için 'a101' gibi bir sözcük hiç eşleşemez; bu yüzden listede yok.
+// Anahtar kelimeler notNormalize çıktısıyla birebir aynıdır (test kilitler).
 
 typedef TohumKategori = ({String ad, int simge, bool gelir});
 
@@ -19,7 +18,16 @@ const tohumKategoriler = <TohumKategori>[
 
 /// Kategori adı -> anahtar kelimeler.
 const tohumAnahtarKelimeler = <String, List<String>>{
-  'Market': ['migros', 'bim', 'sok', 'carrefour', 'manav', 'kasap', 'bakkal'],
+  'Market': [
+    'migros',
+    'bim',
+    'a101',
+    'sok',
+    'carrefour',
+    'manav',
+    'kasap',
+    'bakkal',
+  ],
   'Ulaşım': [
     'shell',
     'opet',

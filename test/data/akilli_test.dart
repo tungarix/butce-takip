@@ -52,16 +52,12 @@ void main() {
       expect(await hits('migros', 1), 1, reason: 'tohum');
       await ekle("Migros ŞUBE'ye ODA 5", 1);
       expect(await hits('migros', 1), 2);
-      expect(
-        await hits('sube', 1),
-        0,
-        reason: "apostrof atılınca 'subeye' olur",
-      );
-      expect(await hits('subeye', 1), 1);
+      expect(await hits('sube', 1), 1, reason: 'apostrof boşluğa döner');
+      expect(await hits('subeye', 1), 0);
       expect(await hits('oda', 1), 1);
       expect(await hits('5', 1), 0);
       final t = await db.select(db.transactions).getSingle();
-      expect(t.noteNorm, 'migros subeye oda');
+      expect(t.noteNorm, 'migros sube ye oda');
     });
 
     test('aynı sözcük iki kez geçse bile işlem başına bir kez sayılır; boş not sayaç yazmaz', () async {

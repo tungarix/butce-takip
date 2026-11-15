@@ -8,6 +8,7 @@ import '../../core/tarih.dart';
 import '../../data/database/database.dart';
 import '../../data/providers.dart';
 import '../../ui_metin.dart';
+import '../ay_secici.dart';
 import '../hizli_giris/hizli_giris.dart';
 import '../ikonlar.dart';
 
@@ -44,8 +45,8 @@ class _IslemlerEkraniState extends ConsumerState<IslemlerEkrani> {
 
   @override
   Widget build(BuildContext context) {
-    final ay = ref.watch(seciliAyProvider);
-    final islemler = ref.watch(ayIslemleriProvider).value;
+    final akis = ref.watch(ayIslemleriProvider);
+    final islemler = akis.value;
     final kategoriler = {
       for (final c in ref.watch(kategorilerProvider).value ?? const <Category>[])
         c.id: c,
@@ -56,31 +57,16 @@ class _IslemlerEkraniState extends ConsumerState<IslemlerEkrani> {
       body: SafeArea(
         child: Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  tooltip: oncekiAyEtiket,
-                  icon: const Icon(Icons.chevron_left),
-                  onPressed: () => ref.read(seciliAyProvider.notifier).kaydir(-1),
-                ),
-                Expanded(
-                  child: Text(
-                    DateFormat('MMMM y', 'tr_TR').format(gunTarihi(ay * 100 + 1)),
-                    key: const ValueKey('ay-basligi'),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                IconButton(
-                  tooltip: sonrakiAyEtiket,
-                  icon: const Icon(Icons.chevron_right),
-                  onPressed: () => ref.read(seciliAyProvider.notifier).kaydir(1),
-                ),
-              ],
-            ),
+            const AySecici(),
             Expanded(
-              child: liste == null
+              child: akis.hasError
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32),
+                        child: Text(veriYuklenemedi, textAlign: TextAlign.center),
+                      ),
+                    )
+                  : liste == null
                   ? const SizedBox()
                   : liste.isEmpty
                   ? const Center(

@@ -1,4 +1,5 @@
 import 'package:butce_takip/data/database/database.dart';
+import 'package:butce_takip/data/providers.dart';
 import 'package:butce_takip/ui_metin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -34,9 +35,9 @@ void main() {
   Future<int> adet(WidgetTester t, AppDatabase db) =>
       t.runAsync(() => db.select(db.transactions).get()).then((l) => l!.length);
 
-  testWidgets('güne göre gruplama: Türkçe gün başlığı, gider toplamı, gelir yeşil +', (t) async {
+  uiTest('güne göre gruplama: Türkçe gün başlığı, gider toplamı, gelir yeşil +', (t) async {
     telefonBoyutu(t);
-    final db = await bellekDb();
+    final db = await bellekDb(t);
     final simdi = DateTime.now();
     final bu = simdi.year * 10000 + simdi.month * 100;
     await ekle(t, db, bu + 2, 10000, not: 'migros');
@@ -55,12 +56,11 @@ void main() {
     }
     final yazi = t.widget<Text>(find.text('+5.000,00 ₺'));
     expect(yazi.style?.color, isNotNull);
-    await temizle(t);
   });
 
-  testWidgets('ay seçici: önceki aya gidince bu ayın işlemi görünmez, boş durum', (t) async {
+  uiTest('ay seçici: önceki aya gidince bu ayın işlemi görünmez, boş durum', (t) async {
     telefonBoyutu(t);
-    final db = await bellekDb();
+    final db = await bellekDb(t);
     final simdi = DateTime.now();
     await ekle(t, db, simdi.year * 10000 + simdi.month * 100 + 1, 1234, not: 'burada');
     await islemlerAc(t, db);
@@ -75,12 +75,11 @@ void main() {
     await t.tap(find.byTooltip(sonrakiAyEtiket));
     await bekle(t);
     expect(find.text(bosAyMetni), findsOneWidget, reason: 'gelecek aya gidilebilir');
-    await temizle(t);
   });
 
-  testWidgets('kaydırıp sil + Geri al: kayıt aynı id ve createdAt ile döner', (t) async {
+  uiTest('kaydırıp sil + Geri al: kayıt aynı id ve createdAt ile döner', (t) async {
     telefonBoyutu(t);
-    final db = await bellekDb();
+    final db = await bellekDb(t);
     final simdi = DateTime.now();
     await ekle(t, db, simdi.year * 10000 + simdi.month * 100 + 1, 4200, not: 'silinecek');
     final once = (await t.runAsync(() => db.select(db.transactions).get()))!.single;
@@ -97,7 +96,18 @@ void main() {
     expect(find.text('silinecek'), findsOneWidget);
     final sonra = (await t.runAsync(() => db.select(db.transactions).get()))!.single;
     expect(sonra, once);
-    await temizle(t);
+  });
+
+  uiTest('provider hata verirse kısa Türkçe hata metni görünür', (t) async {
+    telefonBoyutu(t);
+    final db = await bellekDb(t);
+    await uygulamaAc(
+      t,
+      db,
+      ekstra: [ayIslemleriProvider.overrideWith((ref) => Stream.error(StateError('x')))],
+    );
+    await t.tap(find.text(sekmeIslemler));
+    await bekle(t);
+    expect(find.text(veriYuklenemedi), findsOneWidget);
   });
 }
-

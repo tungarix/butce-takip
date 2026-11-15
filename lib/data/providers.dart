@@ -33,3 +33,19 @@ final ayIslemleriProvider = StreamProvider<List<Transaction>>(
 final sonIslemlerProvider = StreamProvider<List<Transaction>>(
   (ref) => ref.watch(databaseProvider).sonIslemleriIzle(),
 );
+
+final limitlerProvider = StreamProvider<Map<int, int>>(
+  (ref) => ref.watch(databaseProvider).limitleriIzle(),
+);
+
+final ayGiderToplamlariProvider = StreamProvider<Map<int, int>>(
+  (ref) => ref
+      .watch(databaseProvider)
+      .ayGiderToplamlariniIzle(ref.watch(seciliAyProvider)),
+);
+
+final ayGelirToplamiProvider = StreamProvider<int>(
+  (ref) => ref
+      .watch(databaseProvider)
+      .ayGelirToplaminiIzle(ref.watch(seciliAyProvider)),
+);

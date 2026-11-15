@@ -12,7 +12,19 @@ const _kategoriSimgeleri = <IconData>[
   Icons.subscriptions, // 7 Abonelik
   Icons.category, // 8 Diğer
   Icons.payments, // 9 Maaş
+  Icons.school, // 10
+  Icons.checkroom, // 11
+  Icons.pets, // 12
+  Icons.card_giftcard, // 13
+  Icons.flight, // 14
+  Icons.fitness_center, // 15
+  Icons.local_cafe, // 16
+  Icons.phone_android, // 17
+  Icons.savings, // 18
+  Icons.work, // 19
 ];
+
+const kategoriSimgeSayisi = 20;
 
 IconData kategoriSimgesi(int dizin) =>
     dizin >= 0 && dizin < _kategoriSimgeleri.length

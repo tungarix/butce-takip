@@ -4,14 +4,51 @@ import 'package:butce_takip/data/providers.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-AppDatabase? _acik;
+/// Her işlem yazışında hata veren DB (kaydetme hatası yolunu denemek için).
+class BozukDb extends AppDatabase {
+  BozukDb() : super(NativeDatabase.memory());
 
-Future<AppDatabase> bellekDb() async {
+  @override
+  Future<int> islemEkle({
+    required int tutarKurus,
+    required bool gelir,
+    required int kategoriId,
+    required String not,
+    required int gun,
+  }) => Future.error(StateError('yazılamadı'));
+}
+
+// Testin açtığı DB'ler; testin kendisine bağlı, global liste yok.
+final _dbler = Expando<List<AppDatabase>>();
+
+/// Bellek içi DB. [uiTest] bitince (test başarısız olsa da) kapatır.
+Future<AppDatabase> bellekDb(WidgetTester tester, {bool bozuk = false}) async {
   await initializeDateFormatting('tr_TR');
-  return _acik = AppDatabase(NativeDatabase.memory());
+  final db = bozuk ? BozukDb() : AppDatabase(NativeDatabase.memory());
+  (_dbler[tester] ??= []).add(db);
+  return db;
+}
+
+/// testWidgets + garantili temizlik. Temizlik test gövdesinin içinde (finally) yapılmalı:
+/// drift akışlarının zamanlayıcısı gövde bitince bekliyor olmamalı, DB de sahte zamanda değil
+/// gerçek zamanda kapanmalı (aksi halde sqlite3 sonlandırıcıları yarım kapalı bağlantıya girer).
+void uiTest(String ad, Future<void> Function(WidgetTester t) govde) {
+  testWidgets(ad, (t) async {
+    try {
+      await govde(t);
+    } finally {
+      await t.pumpWidget(const SizedBox());
+      await bekle(t, 2);
+      for (final db in _dbler[t] ?? const <AppDatabase>[]) {
+        await t.runAsync(db.close);
+      }
+      _dbler[t] = null;
+    }
+  });
 }
 
 void telefonBoyutu(WidgetTester tester) {
@@ -20,11 +57,16 @@ void telefonBoyutu(WidgetTester tester) {
   addTearDown(tester.view.reset);
 }
 
-Future<void> uygulamaAc(WidgetTester tester, AppDatabase db) async {
+Future<void> uygulamaAc(
+  WidgetTester tester,
+  AppDatabase db, {
+  List<Override> ekstra = const [],
+}) async {
   await tester.pumpWidget(
     ProviderScope(
       // ignore: argument_type_not_assignable
-      overrides: [databaseProvider.overrideWithValue(db)],
+      overrides: [databaseProvider.overrideWithValue(db), ...ekstra],
+      retry: (_, _) => null,
       child: const ButceTakipApp(),
     ),
   );
@@ -37,13 +79,4 @@ Future<void> bekle(WidgetTester tester, [int kare = 8]) async {
     await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 5)));
     await tester.pump(const Duration(milliseconds: 100));
   }
-}
-
-/// Ağacı söker, DB'yi gerçek zamanda kapatır. addTearDown(db.close) sahte
-/// zamanda bitmeyip sqlite3 sonlandırıcılarını yarım kapalı bağlantıya sokuyordu.
-Future<void> temizle(WidgetTester tester) async {
-  await tester.pumpWidget(const SizedBox());
-  await bekle(tester, 2);
-  await tester.runAsync(() => _acik!.close());
-  _acik = null;
 }

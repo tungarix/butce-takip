@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -8,6 +10,7 @@ import '../../data/database/database.dart';
 import '../../data/providers.dart';
 import '../../ui_metin.dart';
 import '../ikonlar.dart';
+import '../tus_takimi.dart';
 
 const hizliGirisCipSayisi = 6;
 
@@ -58,6 +61,9 @@ class _HizliGirisState extends ConsumerState<HizliGirisSayfasi> {
   int? _kategoriId;
   bool _tumu = false;
   bool _kaydediyor = false;
+  // Alt sayfanın içinde, tutarın altında kısa süre görünen hata metni.
+  String? _mesaj;
+  Timer? _mesajZamani;
 
   Transaction? get _duzenle => widget.duzenle;
 
@@ -74,35 +80,50 @@ class _HizliGirisState extends ConsumerState<HizliGirisSayfasi> {
 
   @override
   void dispose() {
+    _mesajZamani?.cancel();
     _not.dispose();
     super.dispose();
+  }
+
+  void _mesajGoster(String mesaj) {
+    _mesajZamani?.cancel();
+    setState(() => _mesaj = mesaj);
+    _mesajZamani = Timer(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _mesaj = null);
+    });
   }
 
   Future<void> _kaydet(int kategoriId) async {
     if (_kaydediyor) return;
     _kaydediyor = true;
-    final db = ref.read(databaseProvider);
-    final gun = gunAnahtari(_tarih);
-    final t = _duzenle;
-    if (t == null) {
-      await db.islemEkle(
-        tutarKurus: _kurus,
-        gelir: _gelir,
-        kategoriId: kategoriId,
-        not: _not.text,
-        gun: gun,
-      );
-    } else {
-      await db.islemGuncelle(
-        t.id,
-        tutarKurus: _kurus,
-        gelir: _gelir,
-        kategoriId: kategoriId,
-        not: _not.text,
-        gun: gun,
-      );
+    try {
+      final db = ref.read(databaseProvider);
+      final gun = gunAnahtari(_tarih);
+      final t = _duzenle;
+      if (t == null) {
+        await db.islemEkle(
+          tutarKurus: _kurus,
+          gelir: _gelir,
+          kategoriId: kategoriId,
+          not: _not.text,
+          gun: gun,
+        );
+      } else {
+        await db.islemGuncelle(
+          t.id,
+          tutarKurus: _kurus,
+          gelir: _gelir,
+          kategoriId: kategoriId,
+          not: _not.text,
+          gun: gun,
+        );
+      }
+      if (mounted) Navigator.pop(context);
+    } catch (_) {
+      if (mounted) _mesajGoster(kaydedilemedi);
+    } finally {
+      _kaydediyor = false;
     }
-    if (mounted) Navigator.pop(context);
   }
 
   void _cipeDokun(Category c) {
@@ -111,9 +132,7 @@ class _HizliGirisState extends ConsumerState<HizliGirisSayfasi> {
       return;
     }
     if (_kurus == 0) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text(onceTutarYaz)));
+      _mesajGoster(onceTutarYaz);
       return;
     }
     setState(() => _kategoriId = c.id);
@@ -160,6 +179,12 @@ class _HizliGirisState extends ConsumerState<HizliGirisSayfasi> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (_duzenle != null)
+              Text(
+                islemDuzenleBaslik,
+                textAlign: TextAlign.center,
+                style: tema.textTheme.titleMedium,
+              ),
             Semantics(
               label: tutarEtiket,
               value: paraYaz(_kurus),
@@ -173,6 +198,16 @@ class _HizliGirisState extends ConsumerState<HizliGirisSayfasi> {
                 ),
               ),
             ),
+            if (_mesaj != null)
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  _mesaj!,
+                  key: const ValueKey('mesaj'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: tema.colorScheme.error),
+                ),
+              ),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -193,7 +228,13 @@ class _HizliGirisState extends ConsumerState<HizliGirisSayfasi> {
               ],
             ),
             const SizedBox(height: 8),
-            _tuslar(),
+            TusTakimi(
+              onRakam: (r) => setState(() {
+                _kurus = tusaBas(_kurus, r);
+                _mesaj = null;
+              }),
+              onSil: () => setState(() => _kurus = tusSil(_kurus)),
+            ),
             ExpansionTile(
               key: const ValueKey('ayrinti'),
               title: const Text(ayrintiEtiket),
@@ -223,7 +264,8 @@ class _HizliGirisState extends ConsumerState<HizliGirisSayfasi> {
                   key: const ValueKey('tarih'),
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.event),
-                  title: Text(
+                  title: const Text(tarihEtiket),
+                  subtitle: Text(
                     DateFormat('d MMMM y, EEEE', 'tr_TR').format(_tarih),
                   ),
                   onTap: _tarihSec,
@@ -241,63 +283,6 @@ class _HizliGirisState extends ConsumerState<HizliGirisSayfasi> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _tuslar() {
-    Widget tus(Widget cocuk, String etiket, VoidCallback onPressed, Key key) =>
-        Semantics(
-          button: true,
-          label: etiket,
-          excludeSemantics: true,
-          child: FilledButton.tonal(
-            key: key,
-            style: FilledButton.styleFrom(minimumSize: const Size(64, 56)),
-            onPressed: onPressed,
-            child: cocuk,
-          ),
-        );
-    Widget rakam(int r) => tus(
-      Text('$r', style: const TextStyle(fontSize: 22)),
-      rakamEtiket(r),
-      () => setState(() => _kurus = tusaBas(_kurus, r)),
-      ValueKey('tus-$r'),
-    );
-    return Column(
-      children: [
-        for (final satir in const [
-          [1, 2, 3],
-          [4, 5, 6],
-          [7, 8, 9],
-        ])
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              children: [
-                for (final r in satir) ...[
-                  Expanded(child: rakam(r)),
-                  if (r % 3 != 0) const SizedBox(width: 8),
-                ],
-              ],
-            ),
-          ),
-        Row(
-          children: [
-            const Expanded(child: SizedBox()),
-            const SizedBox(width: 8),
-            Expanded(child: rakam(0)),
-            const SizedBox(width: 8),
-            Expanded(
-              child: tus(
-                const Icon(Icons.backspace_outlined),
-                geriTusuEtiket,
-                () => setState(() => _kurus = tusSil(_kurus)),
-                const ValueKey('tus-sil'),
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 }

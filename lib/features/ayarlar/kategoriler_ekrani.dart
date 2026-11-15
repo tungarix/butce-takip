@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/para.dart';
 import '../../data/database/database.dart';
 import '../../data/providers.dart';
+import '../../platform/bildirimler.dart';
 import '../../ui_metin.dart';
 import '../ikonlar.dart';
 import '../tus_takimi.dart';
@@ -27,7 +28,10 @@ class KategorilerEkrani extends ConsumerWidget {
           child: Row(
             children: [
               Expanded(
-                child: Text(baslik, style: Theme.of(context).textTheme.titleSmall),
+                child: Text(
+                  baslik,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
               ),
               IconButton(
                 tooltip: ekleEtiket,
@@ -48,7 +52,9 @@ class KategorilerEkrani extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text(kategorilerBaslik)),
       body: kategoriler.hasError
-          ? const Center(child: Text(veriYuklenemedi, textAlign: TextAlign.center))
+          ? const Center(
+              child: Text(veriYuklenemedi, textAlign: TextAlign.center),
+            )
           : liste == null
           ? const SizedBox()
           : ListView(
@@ -101,11 +107,25 @@ class _KategoriSatiri extends ConsumerWidget {
             ),
           IconButton(
             key: ValueKey('arsiv-${c.id}'),
-            tooltip: c.archived ? '${c.name}: $arsivdenCikarEtiket' : '${c.name}: $arsivleEtiket',
-            icon: Icon(c.archived ? Icons.unarchive_outlined : Icons.archive_outlined),
-            onPressed: () => ref
-                .read(databaseProvider)
-                .kategoriArsivle(c.id, arsivli: !c.archived),
+            tooltip: c.archived
+                ? '${c.name}: $arsivdenCikarEtiket'
+                : '${c.name}: $arsivleEtiket',
+            icon: Icon(
+              c.archived ? Icons.unarchive_outlined : Icons.archive_outlined,
+            ),
+            onPressed: () async {
+              try {
+                await ref
+                    .read(databaseProvider)
+                    .kategoriArsivle(c.id, arsivli: !c.archived);
+              } catch (_) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(const SnackBar(content: Text(arsivHatasi)));
+                }
+              }
+            },
           ),
         ],
       ),
@@ -128,6 +148,7 @@ class _KategoriDialogState extends ConsumerState<KategoriDialog> {
   late final TextEditingController _ad;
   late int _simge;
   String? _hata;
+  bool _kaydediyor = false;
 
   @override
   void initState() {
@@ -143,6 +164,8 @@ class _KategoriDialogState extends ConsumerState<KategoriDialog> {
   }
 
   Future<void> _kaydet() async {
+    if (_kaydediyor) return;
+    _kaydediyor = true;
     final db = ref.read(databaseProvider);
     final d = widget.duzenle;
     try {
@@ -153,9 +176,13 @@ class _KategoriDialogState extends ConsumerState<KategoriDialog> {
       }
       if (mounted) Navigator.pop(context);
     } on KategoriAdiHatasi catch (e) {
-      if (mounted) setState(() => _hata = e.neden == AdHatasi.bos ? adBos : adAyni);
+      if (mounted) {
+        setState(() => _hata = e.neden == AdHatasi.bos ? adBos : adAyni);
+      }
     } catch (_) {
       if (mounted) setState(() => _hata = kaydedilemedi);
+    } finally {
+      _kaydediyor = false;
     }
   }
 
@@ -181,7 +208,10 @@ class _KategoriDialogState extends ConsumerState<KategoriDialog> {
               autofocus: true,
               maxLength: 30,
               textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(labelText: adEtiket, errorText: _hata),
+              decoration: InputDecoration(
+                labelText: adEtiket,
+                errorText: _hata,
+              ),
               onChanged: (_) {
                 if (_hata != null) setState(() => _hata = null);
               },
@@ -219,7 +249,10 @@ class _KategoriDialogState extends ConsumerState<KategoriDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text(vazgecEtiket)),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text(vazgecEtiket),
+        ),
         FilledButton(
           key: const ValueKey('kategori-kaydet'),
           onPressed: _kaydet,
@@ -243,6 +276,7 @@ class LimitSayfasi extends ConsumerStatefulWidget {
 
 class _LimitSayfasiState extends ConsumerState<LimitSayfasi> {
   late int _kurus = widget.mevcut ?? 0;
+  late final BildirimKapisi kapi = ref.read(bildirimProvider);
   String? _hata;
 
   Future<void> _calistir(Future<void> Function(AppDatabase db) islem) async {
@@ -310,7 +344,13 @@ class _LimitSayfasiState extends ConsumerState<LimitSayfasi> {
                 FilledButton(
                   key: const ValueKey('limit-kaydet'),
                   onPressed: _kurus > 0
-                      ? () => _calistir((db) => db.limitKoy(widget.kategori.id, _kurus))
+                      ? () => _calistir((db) async {
+                          await db.limitKoy(widget.kategori.id, _kurus);
+                          // İzin ilk limit konduğunda istenir; reddedilirse Özet'teki çubuk yine uyarır.
+                          try {
+                            await izinIsteIlkKez(db, kapi);
+                          } catch (_) {}
+                        })
                       : null,
                   child: const Text(kaydetEtiket),
                 ),

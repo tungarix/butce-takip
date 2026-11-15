@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Android 13+: bütçe aşım bildirimi. Çalışma anı izni ilk limit konduğunda istenir. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="Bütçe Takip"
         android:name="${applicationName}"

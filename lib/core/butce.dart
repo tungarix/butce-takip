@@ -58,7 +58,10 @@ Ozet ozetHesapla({
   final limitsiz = <({int kategoriId, int harcanan})>[];
   var limitToplami = 0;
   var limitliHarcanan = 0;
-  for (final id in {...limitler.keys.where(limitGecerli.contains), ...giderler.keys}) {
+  for (final id in {
+    ...limitler.keys.where(limitGecerli.contains),
+    ...giderler.keys,
+  }) {
     final harcanan = giderler[id] ?? 0;
     final limit = limitGecerli.contains(id) ? limitler[id] : null;
     if (limit == null || limit <= 0) {

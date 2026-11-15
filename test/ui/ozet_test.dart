@@ -43,7 +43,9 @@ void main() {
       )
       .value;
 
-  uiTest('elle girilen veriyle tutarlar, kalan ve yüzde metinleri doğru', (t) async {
+  uiTest('elle girilen veriyle tutarlar, kalan ve yüzde metinleri doğru', (
+    t,
+  ) async {
     telefonBoyutu(t);
     final db = await bellekDb(t);
     await islem(t, db, buAy, 9000, kat: 1); // Market 90,00
@@ -56,7 +58,11 @@ void main() {
     await uygulamaAc(t, db);
 
     expect(yazi(t, 'ozet-harcanan'), '260,00 ₺');
-    expect(yazi(t, 'ozet-kalan'), '-10,00 ₺', reason: '200 limit - 210 harcama, eksiye düşer');
+    expect(
+      yazi(t, 'ozet-kalan'),
+      '-10,00 ₺',
+      reason: '200 limit - 210 harcama, eksiye düşer',
+    );
     expect(yazi(t, 'ozet-gelir'), '5.000,00 ₺');
     expect(yazi(t, 'yuzde-1'), '%90');
     expect(yazi(t, 'yuzde-2'), '%120');
@@ -66,29 +72,46 @@ void main() {
     expect(find.text('Ulaşım bütçesi doldu (%120)'), findsOneWidget);
     expect(find.text('90,00 ₺ / 100,00 ₺'), findsOneWidget);
     expect(find.text(limitsizBaslik), findsOneWidget);
-    expect(find.descendant(of: find.byKey(const ValueKey('limitsiz-7')), matching: find.text('50,00 ₺')), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('limitsiz-7')),
+        matching: find.text('50,00 ₺'),
+      ),
+      findsOneWidget,
+    );
     expect(find.text(limitCagrisi), findsNothing);
   });
 
-  uiTest('normal durumda uyarı cümlesi yok; yüzde %79 normal, %80 uyarı rengi', (t) async {
-    telefonBoyutu(t);
-    final db = await bellekDb(t);
-    await islem(t, db, buAy, 7900, kat: 1);
-    await islem(t, db, buAy, 8000, kat: 2);
-    await limit(t, db, 1, 10000);
-    await limit(t, db, 2, 10000);
-    await uygulamaAc(t, db);
+  uiTest(
+    'normal durumda uyarı cümlesi yok; yüzde %79 normal, %80 uyarı rengi',
+    (t) async {
+      telefonBoyutu(t);
+      final db = await bellekDb(t);
+      await islem(t, db, buAy, 7900, kat: 1);
+      await islem(t, db, buAy, 8000, kat: 2);
+      await limit(t, db, 1, 10000);
+      await limit(t, db, 2, 10000);
+      await uygulamaAc(t, db);
 
-    expect(yazi(t, 'yuzde-1'), '%79');
-    expect(yazi(t, 'yuzde-2'), '%80');
-    expect(find.text('Market bütçesi %79 doldu'), findsNothing);
-    expect(find.text('Ulaşım bütçesi %80 doldu'), findsOneWidget);
-    final normal = t.widget<Text>(find.byKey(const ValueKey('yuzde-1'))).style!.color;
-    final uyari = t.widget<Text>(find.byKey(const ValueKey('yuzde-2'))).style!.color;
-    expect(uyari, isNot(normal));
-  });
+      expect(yazi(t, 'yuzde-1'), '%79');
+      expect(yazi(t, 'yuzde-2'), '%80');
+      expect(find.text('Market bütçesi %79 doldu'), findsNothing);
+      expect(find.text('Ulaşım bütçesi %80 doldu'), findsOneWidget);
+      final normal = t
+          .widget<Text>(find.byKey(const ValueKey('yuzde-1')))
+          .style!
+          .color;
+      final uyari = t
+          .widget<Text>(find.byKey(const ValueKey('yuzde-2')))
+          .style!
+          .color;
+      expect(uyari, isNot(normal));
+    },
+  );
 
-  uiTest('ay değişince güncellenir; limit yokken limit ekleme çağrısı çıkar', (t) async {
+  uiTest('ay değişince güncellenir; limit yokken limit ekleme çağrısı çıkar', (
+    t,
+  ) async {
     telefonBoyutu(t);
     final db = await bellekDb(t);
     await islem(t, db, buAy, 4000, kat: 1);
@@ -110,7 +133,9 @@ void main() {
     expect(find.text(bosAyMetni), findsOneWidget);
   });
 
-  uiTest('arşivli kategorinin harcaması toplamda kalır, limiti işlemez', (t) async {
+  uiTest('arşivli kategorinin harcaması toplamda kalır, limiti işlemez', (
+    t,
+  ) async {
     telefonBoyutu(t);
     final db = await bellekDb(t);
     await islem(t, db, buAy, 3000, kat: 1);

@@ -35,4 +35,18 @@ int ayKaydir(int ayAnahtari, int adim) {
 }
 
 /// yyyymmdd -> yerel gün başı. [gunAnahtari]'nın tersi.
-DateTime gunTarihi(int gun) => DateTime(gun ~/ 10000, gun ~/ 100 % 100, gun % 100);
+DateTime gunTarihi(int gun) =>
+    DateTime(gun ~/ 10000, gun ~/ 100 % 100, gun % 100);
+
+DateTime _takvimGunu(int gun) =>
+    DateTime.utc(gun ~/ 10000, gun ~/ 100 % 100, gun % 100);
+
+/// [a] ile [b] (yyyymmdd) arasındaki takvim günü sayısı (b - a). UTC üzerinden hesaplanır:
+/// yaz saati geçişindeki 23/25 saatlik gün sayıyı kaydırmaz.
+int gunFarki(int a, int b) => _takvimGunu(b).difference(_takvimGunu(a)).inDays;
+
+/// yyyymmdd + [n] gün (n eksi olabilir); ay ve yıl geçişini karşılar.
+int gunEkle(int gun, int n) {
+  final d = _takvimGunu(gun).add(Duration(days: n));
+  return d.year * 10000 + d.month * 100 + d.day;
+}

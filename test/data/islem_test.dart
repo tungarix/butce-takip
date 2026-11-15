@@ -8,14 +8,18 @@ void main() {
   setUp(() => db = AppDatabase(NativeDatabase.memory()));
   tearDown(() => db.close());
 
-  Future<int> ekle(int gun, {int tutar = 1000, bool gelir = false, String not = ''}) =>
-      db.islemEkle(
-        tutarKurus: tutar,
-        gelir: gelir,
-        kategoriId: gelir ? 10 : 1,
-        not: not,
-        gun: gun,
-      );
+  Future<int> ekle(
+    int gun, {
+    int tutar = 1000,
+    bool gelir = false,
+    String not = '',
+  }) => db.islemEkle(
+    tutarKurus: tutar,
+    gelir: gelir,
+    kategoriId: gelir ? 10 : 1,
+    not: not,
+    gun: gun,
+  );
 
   Future<List<Transaction>> ay(int a) => db.ayIslemleriniIzle(a).first;
 
@@ -78,8 +82,11 @@ void main() {
 
   test('akış: ekleme ve silme izleyiciye yansır', () async {
     final adetler = <int>[];
-    final abonelik = db.ayIslemleriniIzle(202603).listen((l) => adetler.add(l.length));
-    Future<void> bekle() => Future<void>.delayed(const Duration(milliseconds: 50));
+    final abonelik = db
+        .ayIslemleriniIzle(202603)
+        .listen((l) => adetler.add(l.length));
+    Future<void> bekle() =>
+        Future<void>.delayed(const Duration(milliseconds: 50));
     await bekle();
     final id = await ekle(20260310);
     await bekle();

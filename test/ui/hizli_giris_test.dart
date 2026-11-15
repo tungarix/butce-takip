@@ -18,7 +18,9 @@ Future<void> _bas(WidgetTester t, List<int> rakamlar) async {
 }
 
 void main() {
-  uiTest('tuşlar -> çip: doğru kuruş, kategori ve bugünün günü kaydedilir', (t) async {
+  uiTest('tuşlar -> çip: doğru kuruş, kategori ve bugünün günü kaydedilir', (
+    t,
+  ) async {
     telefonBoyutu(t);
     final db = await bellekDb(t);
     await uygulamaAc(t, db);
@@ -39,7 +41,11 @@ void main() {
     expect(s.categoryId, 1);
     expect(s.isIncome, isFalse);
     expect(s.day, gunAnahtari(DateTime.now()));
-    expect(find.byKey(const ValueKey('tutar')), findsNothing, reason: 'sayfa kapanmalı');
+    expect(
+      find.byKey(const ValueKey('tutar')),
+      findsNothing,
+      reason: 'sayfa kapanmalı',
+    );
   });
 
   uiTest('tutar 0 iken çip kaydetmez ve sayfa açık kalır', (t) async {
@@ -56,7 +62,10 @@ void main() {
     expect(find.byKey(const ValueKey('tutar')), findsOneWidget);
     // Uyarı alt sayfanın içinde (SnackBar değil, sayfanın arkasında kalmaz).
     expect(
-      find.descendant(of: find.byType(HizliGirisSayfasi), matching: find.text(onceTutarYaz)),
+      find.descendant(
+        of: find.byType(HizliGirisSayfasi),
+        matching: find.text(onceTutarYaz),
+      ),
       findsOneWidget,
     );
     expect(find.byType(SnackBar), findsNothing);
@@ -75,25 +84,30 @@ void main() {
     expect(find.text('0,52 ₺'), findsOneWidget);
   });
 
-  uiTest('gelir anahtarı gelir kategorilerini gösterir ve gelir olarak kaydeder', (t) async {
-    telefonBoyutu(t);
-    final db = await bellekDb(t);
-    await uygulamaAc(t, db);
-    await t.tap(find.byTooltip(islemEkleEtiket));
-    await bekle(t);
-    await t.tap(find.text(ayrintiEtiket));
-    await bekle(t);
-    await t.tap(find.text(gelirEtiket));
-    await bekle(t);
-    expect(find.byKey(const ValueKey('cip-1')), findsNothing);
-    await _bas(t, [1, 0, 0, 0, 0]);
-    await t.tap(find.byKey(const ValueKey('cip-10'))); // Maaş
-    await bekle(t);
-    final s = (await _hepsi(t, db)).single;
-    expect((s.amountKurus, s.isIncome, s.categoryId), (10000, true, 10));
-  });
+  uiTest(
+    'gelir anahtarı gelir kategorilerini gösterir ve gelir olarak kaydeder',
+    (t) async {
+      telefonBoyutu(t);
+      final db = await bellekDb(t);
+      await uygulamaAc(t, db);
+      await t.tap(find.byTooltip(islemEkleEtiket));
+      await bekle(t);
+      await t.tap(find.text(ayrintiEtiket));
+      await bekle(t);
+      await t.tap(find.text(gelirEtiket));
+      await bekle(t);
+      expect(find.byKey(const ValueKey('cip-1')), findsNothing);
+      await _bas(t, [1, 0, 0, 0, 0]);
+      await t.tap(find.byKey(const ValueKey('cip-10'))); // Maaş
+      await bekle(t);
+      final s = (await _hepsi(t, db)).single;
+      expect((s.amountKurus, s.isIncome, s.categoryId), (10000, true, 10));
+    },
+  );
 
-  uiTest('düzenleme: çip yalnız seçer, Kaydet günceller (id korunur)', (t) async {
+  uiTest('düzenleme: çip yalnız seçer, Kaydet günceller (id korunur)', (
+    t,
+  ) async {
     telefonBoyutu(t);
     final db = await bellekDb(t);
     final id = await t.runAsync(
@@ -117,7 +131,11 @@ void main() {
     await _bas(t, [7]); // 50,07
     await t.tap(find.byKey(const ValueKey('cip-2')).last);
     await bekle(t);
-    expect(await _hepsi(t, db).then((l) => l.single.categoryId), 1, reason: 'çip kaydetmemeli');
+    expect(
+      await _hepsi(t, db).then((l) => l.single.categoryId),
+      1,
+      reason: 'çip kaydetmemeli',
+    );
 
     await t.ensureVisible(find.byKey(const ValueKey('kaydet')));
     await t.tap(find.byKey(const ValueKey('kaydet')));
@@ -126,25 +144,28 @@ void main() {
     expect((s.id, s.amountKurus, s.categoryId), (id, 5007, 2));
   });
 
-  uiTest('kayıt hatası: Türkçe mesaj görünür, sayfa açık kalır, tekrar denenebilir', (t) async {
-    telefonBoyutu(t);
-    final db = await bellekDb(t, bozuk: true);
-    await uygulamaAc(t, db);
-    await t.tap(find.byTooltip(islemEkleEtiket));
-    await bekle(t);
-    await _bas(t, [5, 0]);
-    await t.tap(find.byKey(const ValueKey('cip-1')));
-    await bekle(t);
-    expect(find.text(kaydedilemedi), findsOneWidget);
-    expect(find.byKey(const ValueKey('tutar')), findsOneWidget);
+  uiTest(
+    'kayıt hatası: Türkçe mesaj görünür, sayfa açık kalır, tekrar denenebilir',
+    (t) async {
+      telefonBoyutu(t);
+      final db = await bellekDb(t, bozuk: true);
+      await uygulamaAc(t, db);
+      await t.tap(find.byTooltip(islemEkleEtiket));
+      await bekle(t);
+      await _bas(t, [5, 0]);
+      await t.tap(find.byKey(const ValueKey('cip-1')));
+      await bekle(t);
+      expect(find.text(kaydedilemedi), findsOneWidget);
+      expect(find.byKey(const ValueKey('tutar')), findsOneWidget);
 
-    // _kaydediyor sıfırlandı: ikinci basış da kaydetmeyi dener (yine hata verir).
-    await t.tap(find.byKey(const ValueKey('tus-sil')));
-    await t.pump();
-    await t.tap(find.byKey(const ValueKey('cip-2')));
-    await bekle(t);
-    expect(find.text(kaydedilemedi), findsOneWidget);
-  });
+      // _kaydediyor sıfırlandı: ikinci basış da kaydetmeyi dener (yine hata verir).
+      await t.tap(find.byKey(const ValueKey('tus-sil')));
+      await t.pump();
+      await t.tap(find.byKey(const ValueKey('cip-2')));
+      await bekle(t);
+      expect(find.text(kaydedilemedi), findsOneWidget);
+    },
+  );
 
   uiTest('düzenleme: başlık ve tarih etiketi görünür', (t) async {
     telefonBoyutu(t);

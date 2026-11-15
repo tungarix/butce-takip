@@ -50,29 +50,38 @@ void main() {
       expect(o.limitsiz.map((s) => s.kategoriId), [2, 1]);
     });
 
-    test('kalan eksiye düşebilir; yalnız limitli kategorilerin harcaması düşülür', () {
-      final o = ozetHesapla(
-        giderler: {1: 12000, 2: 50000},
-        limitler: {1: 10000},
-        limitGecerli: {1, 2},
-      );
-      expect(o.harcanan, 62000);
-      expect(o.limitToplami, 10000);
-      expect(o.kalan, -2000);
-      expect(o.limitli.single.yuzde, 120);
-      expect(o.limitli.single.durum, LimitDurumu.asim);
-      expect(o.limitsiz.single.kategoriId, 2);
-    });
+    test(
+      'kalan eksiye düşebilir; yalnız limitli kategorilerin harcaması düşülür',
+      () {
+        final o = ozetHesapla(
+          giderler: {1: 12000, 2: 50000},
+          limitler: {1: 10000},
+          limitGecerli: {1, 2},
+        );
+        expect(o.harcanan, 62000);
+        expect(o.limitToplami, 10000);
+        expect(o.kalan, -2000);
+        expect(o.limitli.single.yuzde, 120);
+        expect(o.limitli.single.durum, LimitDurumu.asim);
+        expect(o.limitsiz.single.kategoriId, 2);
+      },
+    );
 
-    test('harcamasız limitli kategori çubukta görünür; yüzdeye göre sıralı', () {
-      final o = ozetHesapla(
-        giderler: {2: 9000},
-        limitler: {1: 10000, 2: 10000},
-        limitGecerli: {1, 2},
-      );
-      expect(o.limitli.map((s) => (s.kategoriId, s.yuzde)), [(2, 90), (1, 0)]);
-      expect(o.kalan, 11000);
-    });
+    test(
+      'harcamasız limitli kategori çubukta görünür; yüzdeye göre sıralı',
+      () {
+        final o = ozetHesapla(
+          giderler: {2: 9000},
+          limitler: {1: 10000, 2: 10000},
+          limitGecerli: {1, 2},
+        );
+        expect(o.limitli.map((s) => (s.kategoriId, s.yuzde)), [
+          (2, 90),
+          (1, 0),
+        ]);
+        expect(o.kalan, 11000);
+      },
+    );
 
     test('arşivli kategori limiti işlemez ama harcaması toplama ve limitsize girer', () {
       final o = ozetHesapla(

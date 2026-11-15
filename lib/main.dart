@@ -4,14 +4,22 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'app.dart';
 import 'data/providers.dart';
+import 'platform/bildirimler.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('tr_TR');
-  final container = ProviderContainer();
+  final bildirimler = YerelBildirimler();
+  await bildirimler.baslat();
+  final container = ProviderContainer(
+    overrides: [bildirimProvider.overrideWithValue(bildirimler)],
+  );
   // Veritabanını açılışta aç: şema ve tohum hatası ilk kullanımda değil burada patlasın.
   await container.read(databaseProvider).customSelect('SELECT 1').get();
   runApp(
-    UncontrolledProviderScope(container: container, child: const ButceTakipApp()),
+    UncontrolledProviderScope(
+      container: container,
+      child: const ButceTakipApp(),
+    ),
   );
 }

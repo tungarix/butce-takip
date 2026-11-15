@@ -49,7 +49,10 @@ void main() {
       expect(tusaBas(paraUstSinirKurus, 9), paraUstSinirKurus);
       // Sınıra tam oturan son basış kabul edilir, bir sonraki reddedilir.
       expect(tusaBas(9999999999, 9), paraUstSinirKurus);
-      expect(tusaBas(paraUstSinirKurus ~/ 10 + 1, 0), paraUstSinirKurus ~/ 10 + 1);
+      expect(
+        tusaBas(paraUstSinirKurus ~/ 10 + 1, 0),
+        paraUstSinirKurus ~/ 10 + 1,
+      );
     });
   });
 }

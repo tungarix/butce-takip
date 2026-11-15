@@ -1630,24 +1630,22 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ];
 }
 
-typedef $$CategoriesTableCreateCompanionBuilder =
-    CategoriesCompanion Function({
-      Value<int> id,
-      required String name,
-      required int icon,
-      Value<bool> isIncome,
-      required int sortOrder,
-      Value<bool> archived,
-    });
-typedef $$CategoriesTableUpdateCompanionBuilder =
-    CategoriesCompanion Function({
-      Value<int> id,
-      Value<String> name,
-      Value<int> icon,
-      Value<bool> isIncome,
-      Value<int> sortOrder,
-      Value<bool> archived,
-    });
+typedef $$CategoriesTableCreateCompanionBuilder = CategoriesCompanion Function({
+  Value<int> id,
+  required String name,
+  required int icon,
+  Value<bool> isIncome,
+  required int sortOrder,
+  Value<bool> archived,
+});
+typedef $$CategoriesTableUpdateCompanionBuilder = CategoriesCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<int> icon,
+  Value<bool> isIncome,
+  Value<int> sortOrder,
+  Value<bool> archived,
+});
 
 final class $$CategoriesTableReferences
     extends BaseReferences<_$AppDatabase, $CategoriesTable, Category> {
@@ -2474,17 +2472,15 @@ class $$TransactionsTableTableManager
                     >
                   >(state) {
                     if (categoryId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.categoryId,
-                                referencedTable: $$TransactionsTableReferences
-                                    ._categoryIdTable(db),
-                                referencedColumn: $$TransactionsTableReferences
-                                    ._categoryIdTable(db)
-                                    .id,
-                              )
-                              as T;
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.categoryId,
+                        referencedTable: $$TransactionsTableReferences
+                            ._categoryIdTable(db),
+                        referencedColumn: $$TransactionsTableReferences
+                            ._categoryIdTable(db)
+                            .id,
+                      ) as T;
                     }
 
                     return state;
@@ -2512,16 +2508,14 @@ typedef $$TransactionsTableProcessedTableManager =
       Transaction,
       PrefetchHooks Function({bool categoryId})
     >;
-typedef $$BudgetsTableCreateCompanionBuilder =
-    BudgetsCompanion Function({
-      Value<int> categoryId,
-      required int monthlyLimitKurus,
-    });
-typedef $$BudgetsTableUpdateCompanionBuilder =
-    BudgetsCompanion Function({
-      Value<int> categoryId,
-      Value<int> monthlyLimitKurus,
-    });
+typedef $$BudgetsTableCreateCompanionBuilder = BudgetsCompanion Function({
+  Value<int> categoryId,
+  required int monthlyLimitKurus,
+});
+typedef $$BudgetsTableUpdateCompanionBuilder = BudgetsCompanion Function({
+  Value<int> categoryId,
+  Value<int> monthlyLimitKurus,
+});
 
 final class $$BudgetsTableReferences
     extends BaseReferences<_$AppDatabase, $BudgetsTable, Budget> {
@@ -2730,17 +2724,15 @@ class $$BudgetsTableTableManager
                     >
                   >(state) {
                     if (categoryId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.categoryId,
-                                referencedTable: $$BudgetsTableReferences
-                                    ._categoryIdTable(db),
-                                referencedColumn: $$BudgetsTableReferences
-                                    ._categoryIdTable(db)
-                                    .id,
-                              )
-                              as T;
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.categoryId,
+                        referencedTable: $$BudgetsTableReferences
+                            ._categoryIdTable(db),
+                        referencedColumn: $$BudgetsTableReferences
+                            ._categoryIdTable(db)
+                            .id,
+                      ) as T;
                     }
 
                     return state;
@@ -3009,17 +3001,15 @@ class $$KeywordHitsTableTableManager
                     >
                   >(state) {
                     if (categoryId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.categoryId,
-                                referencedTable: $$KeywordHitsTableReferences
-                                    ._categoryIdTable(db),
-                                referencedColumn: $$KeywordHitsTableReferences
-                                    ._categoryIdTable(db)
-                                    .id,
-                              )
-                              as T;
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.categoryId,
+                        referencedTable: $$KeywordHitsTableReferences
+                            ._categoryIdTable(db),
+                        referencedColumn: $$KeywordHitsTableReferences
+                            ._categoryIdTable(db)
+                            .id,
+                      ) as T;
                     }
 
                     return state;
@@ -3047,18 +3037,16 @@ typedef $$KeywordHitsTableProcessedTableManager =
       KeywordHit,
       PrefetchHooks Function({bool categoryId})
     >;
-typedef $$SettingsTableCreateCompanionBuilder =
-    SettingsCompanion Function({
-      required String key,
-      required String value,
-      Value<int> rowid,
-    });
-typedef $$SettingsTableUpdateCompanionBuilder =
-    SettingsCompanion Function({
-      Value<String> key,
-      Value<String> value,
-      Value<int> rowid,
-    });
+typedef $$SettingsTableCreateCompanionBuilder = SettingsCompanion Function({
+  required String key,
+  required String value,
+  Value<int> rowid,
+});
+typedef $$SettingsTableUpdateCompanionBuilder = SettingsCompanion Function({
+  Value<String> key,
+  Value<String> value,
+  Value<int> rowid,
+});
 
 class $$SettingsTableFilterComposer
     extends Composer<_$AppDatabase, $SettingsTable> {
@@ -3142,22 +3130,16 @@ class $$SettingsTableTableManager
               $$SettingsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$SettingsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> key = const Value.absent(),
-                Value<String> value = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => SettingsCompanion(key: key, value: value, rowid: rowid),
-          createCompanionCallback:
-              ({
-                required String key,
-                required String value,
-                Value<int> rowid = const Value.absent(),
-              }) => SettingsCompanion.insert(
-                key: key,
-                value: value,
-                rowid: rowid,
-              ),
+          updateCompanionCallback: ({
+            Value<String> key = const Value.absent(),
+            Value<String> value = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) => SettingsCompanion(key: key, value: value, rowid: rowid),
+          createCompanionCallback: ({
+            required String key,
+            required String value,
+            Value<int> rowid = const Value.absent(),
+          }) => SettingsCompanion.insert(key: key, value: value, rowid: rowid),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),

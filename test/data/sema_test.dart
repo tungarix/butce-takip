@@ -11,21 +11,23 @@ void main() {
   tearDown(() => db.close());
 
   Future<int> islemEkle({int tutar = 1000, int? kategori}) {
-    return db.into(db.transactions).insert(
-      TransactionsCompanion.insert(
-        amountKurus: tutar,
-        isIncome: false,
-        categoryId: kategori ?? 1,
-        day: 20260315,
-        createdAt: 0,
-      ),
-    );
+    return db
+        .into(db.transactions)
+        .insert(
+          TransactionsCompanion.insert(
+            amountKurus: tutar,
+            isIncome: false,
+            categoryId: kategori ?? 1,
+            day: 20260315,
+            createdAt: 0,
+          ),
+        );
   }
 
   test('onCreate: 10 hazır kategori, sıra ve gelir bayrağı', () async {
-    final liste = await (db.select(db.categories)
-          ..orderBy([(c) => OrderingTerm.asc(c.sortOrder)]))
-        .get();
+    final liste = await (db.select(
+      db.categories,
+    )..orderBy([(c) => OrderingTerm.asc(c.sortOrder)])).get();
     expect(liste.map((c) => c.name), tohumKategoriler.map((k) => k.ad));
     expect(liste, hasLength(10));
     expect(liste.where((c) => c.isIncome).map((c) => c.name), ['Maaş']);
@@ -34,12 +36,12 @@ void main() {
 
   test('tohum anahtar kelimeler doğru kategoriye bağlı', () async {
     Future<String> kategoriOf(String kelime) async {
-      final satir = await (db.select(db.keywordHits)
-            ..where((h) => h.keyword.equals(kelime)))
-          .getSingle();
-      final c = await (db.select(db.categories)
-            ..where((c) => c.id.equals(satir.categoryId)))
-          .getSingle();
+      final satir = await (db.select(
+        db.keywordHits,
+      )..where((h) => h.keyword.equals(kelime))).getSingle();
+      final c = await (db.select(
+        db.categories,
+      )..where((c) => c.id.equals(satir.categoryId))).getSingle();
       return c.name;
     }
 
@@ -66,9 +68,11 @@ void main() {
 
   test('kategori adı benzersiz', () async {
     await expectLater(
-      db.into(db.categories).insert(
-        CategoriesCompanion.insert(name: 'Market', icon: 0, sortOrder: 99),
-      ),
+      db
+          .into(db.categories)
+          .insert(
+            CategoriesCompanion.insert(name: 'Market', icon: 0, sortOrder: 99),
+          ),
       throwsA(isA<Exception>()),
     );
   });
@@ -95,14 +99,15 @@ void main() {
     await islemEkle(tutar: 250, kategori: 1);
     await islemEkle(tutar: 799, kategori: 2);
     final toplam = db.transactions.amountKurus.sum();
-    final genel = await (db.selectOnly(db.transactions)..addColumns([toplam]))
-        .map((r) => r.read(toplam))
-        .getSingle();
-    final kategoriBazli = await (db.selectOnly(db.transactions)
-          ..addColumns([db.transactions.categoryId, toplam])
-          ..groupBy([db.transactions.categoryId]))
-        .map((r) => r.read(toplam)!)
-        .get();
+    final genel = await (db.selectOnly(
+      db.transactions,
+    )..addColumns([toplam])).map((r) => r.read(toplam)).getSingle();
+    final kategoriBazli =
+        await (db.selectOnly(db.transactions)
+              ..addColumns([db.transactions.categoryId, toplam])
+              ..groupBy([db.transactions.categoryId]))
+            .map((r) => r.read(toplam)!)
+            .get();
     expect(genel, 2099);
     expect(kategoriBazli.fold(0, (a, b) => a + b), genel);
   });

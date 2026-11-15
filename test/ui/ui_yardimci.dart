@@ -22,13 +22,30 @@ class BozukDb extends AppDatabase {
   }) => Future.error(StateError('yazılamadı'));
 }
 
+/// Arşivleme her seferinde hata veren DB.
+class ArsivBozukDb extends AppDatabase {
+  ArsivBozukDb() : super(NativeDatabase.memory());
+
+  @override
+  Future<void> kategoriArsivle(int id, {required bool arsivli}) =>
+      Future.error(StateError('yazılamadı'));
+}
+
 // Testin açtığı DB'ler; testin kendisine bağlı, global liste yok.
 final _dbler = Expando<List<AppDatabase>>();
 
 /// Bellek içi DB. [uiTest] bitince (test başarısız olsa da) kapatır.
-Future<AppDatabase> bellekDb(WidgetTester tester, {bool bozuk = false}) async {
+Future<AppDatabase> bellekDb(
+  WidgetTester tester, {
+  bool bozuk = false,
+  bool arsivBozuk = false,
+}) async {
   await initializeDateFormatting('tr_TR');
-  final db = bozuk ? BozukDb() : AppDatabase(NativeDatabase.memory());
+  final db = bozuk
+      ? BozukDb()
+      : arsivBozuk
+      ? ArsivBozukDb()
+      : AppDatabase(NativeDatabase.memory());
   (_dbler[tester] ??= []).add(db);
   return db;
 }
@@ -76,7 +93,9 @@ Future<void> uygulamaAc(
 /// Gerçek async işin (drift) ve animasyonların ilerlemesi için birkaç kare.
 Future<void> bekle(WidgetTester tester, [int kare = 8]) async {
   for (var i = 0; i < kare; i++) {
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 5)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
     await tester.pump(const Duration(milliseconds: 100));
   }
 }

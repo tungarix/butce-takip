@@ -48,7 +48,8 @@ class _IslemlerEkraniState extends ConsumerState<IslemlerEkrani> {
     final akis = ref.watch(ayIslemleriProvider);
     final islemler = akis.value;
     final kategoriler = {
-      for (final c in ref.watch(kategorilerProvider).value ?? const <Category>[])
+      for (final c
+          in ref.watch(kategorilerProvider).value ?? const <Category>[])
         c.id: c,
     };
     final liste = islemler?.where((t) => !_gizli.contains(t.id)).toList();
@@ -63,7 +64,10 @@ class _IslemlerEkraniState extends ConsumerState<IslemlerEkrani> {
                   ? const Center(
                       child: Padding(
                         padding: EdgeInsets.all(32),
-                        child: Text(veriYuklenemedi, textAlign: TextAlign.center),
+                        child: Text(
+                          veriYuklenemedi,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     )
                   : liste == null
@@ -159,7 +163,9 @@ class _Satir extends StatelessWidget {
         ? Colors.green.shade300
         : Colors.green.shade700;
     return Semantics(
-      customSemanticsActions: {CustomSemanticsAction(label: silEtiket): () => onSil(t)},
+      customSemanticsActions: {
+        CustomSemanticsAction(label: silEtiket): () => onSil(t),
+      },
       child: Dismissible(
         key: ValueKey('islem-${t.id}'),
         direction: DismissDirection.endToStart,

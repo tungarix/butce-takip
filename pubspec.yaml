@@ -13,7 +13,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
-  # Sürümler habit-tracker-mobil ile aynı (pub önbelleğinden gelsin diye).
+  # Sürümler bilerek sabit tutuluyor.
   drift: 2.34.0
   sqlite3_flutter_libs: 0.6.0+eol
   drift_flutter: ^0.3.1

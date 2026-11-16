@@ -107,7 +107,7 @@ drift_schemas/
 | 3 | Kategoriler, limitler, Özet | Elle girilen veriyle çubuk yüzdeleri doğru |
 | 4 | Akıllı: normalize, öneri, tahmin, aşım bildirimi, en son tekrar tespiti | Her birinin birim testi yeşil; emülatörde bildirim geliyor |
 | 5 | Yedek / geri yükle | Dışa aktar, veriyi sil, içe aktar: toplamlar birebir aynı; bozuk dosya hiçbir şeyi değiştirmiyor |
-| 6 | Yayın: imzalı APK, Actions, v1.0.0 taslak release | Release APK'sı gerçek telefona kuruluyor, kısayoldan açılıp işlem ekleniyor |
+| 6 | Yayın: imzalı APK, Actions, v0.1.0 taslak release | Release APK'sı gerçek telefona kuruluyor, kısayoldan açılıp işlem ekleniyor |
 
 ## Test
 

@@ -29,7 +29,7 @@ Veri tek kopya: yalnız telefondadır. Uygulamayı kaldırmak ya da telefonu sı
 
 ## Doğrulama
 
-Sertifika SHA-256 parmak izi: _ilk sürümle doldurulacak_.
+Sertifika SHA-256 parmak izi: `2C:0A:94:60:13:5E:42:07:81:18:E4:BA:64:13:72:6D:FE:5B:85:B5:75:B0:2E:EA:20:71:F2:3C:B8:BA:8E:B1`
 
 ## Geliştirme
 

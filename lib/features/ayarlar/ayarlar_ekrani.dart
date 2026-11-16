@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database/database.dart';
 import '../../data/providers.dart';
+import '../../surum.dart';
 import '../../ui_metin.dart';
 import 'kategoriler_ekrani.dart';
 import 'yedek_islemleri.dart';
@@ -64,6 +65,17 @@ class AyarlarEkrani extends ConsumerWidget {
               // Anahtar ayarın akışından güncellenir; yazılamadıysa eski durumunda kalır.
             }
           },
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 24),
+          child: Center(
+            child: Text(
+              // '+derleme' kısmı kullanıcıya gösterilmez.
+              'Bütçe Takip ${uygulamaSurumu.split('+').first}',
+              key: const ValueKey('surum-metni'),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
         ),
       ],
     ),

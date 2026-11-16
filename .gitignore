@@ -46,3 +46,10 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Sırlar ve yerel dosyalar
+*.jks
+*.keystore
+key.properties
+.env
+dagitim/

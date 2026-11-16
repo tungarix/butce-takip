@@ -41,11 +41,28 @@ android {
         versionName = flutter.versionName
     }
 
+    // Sürüm imzası CI'da (release.yml) ortam değişkenlerinden gelir; anahtar depoda yok.
+    // Değişkenler yoksa (yerel geliştirme) debug anahtarı kullanılır: o APK yalnız yerel
+    // deneme içindir, yayımlanan APK'lar hep aynı sürüm anahtarıyla imzalanır ve birbirinin
+    // üstüne kurulur.
+    // CI, sürüm anahtarı olmayan (etiketsiz) çalıştırmada değişkeni boş bırakır: boşu "yok" say.
+    val surumAnahtari = System.getenv("BUTCE_KEYSTORE")?.takeIf { it.isNotBlank() }
+    signingConfigs {
+        if (surumAnahtari != null) {
+            create("surum") {
+                storeFile = file(surumAnahtari)
+                storePassword = System.getenv("BUTCE_KEYSTORE_PASSWORD")
+                keyAlias = "butce"
+                keyPassword = System.getenv("BUTCE_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName(
+                if (surumAnahtari != null) "surum" else "debug"
+            )
         }
     }
 }

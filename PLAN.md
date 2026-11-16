@@ -133,7 +133,7 @@ drift_schemas/
   `initializeDateFormatting` çağrılır.
 - **Az veride tahmin yanıltır**: ilk 5 gün gösterilmez, sonrasında "bu hızla" diye sunulur.
 
-## Arda'nın kararını bekleyenler
+## Açık kararlar
 
 1. Uygulamanın adı ve GitHub repo adı.
 2. Kullanıcı sen misin, başkası mı? Başkasıysa banka SMS'i beklentisi baştan konuşulmalı.

@@ -1,0 +1,182 @@
+name: Release
+
+# APK yerelde değil burada derlenir: yerel makinede Android NDK/SDK tutmaya gerek yok ve
+# imza anahtarı disk temizliğiyle kaybolmaz. Anahtar depoda değil, GitHub secret'larında
+# (bkz. guvenlik/incelemeler/README.md). Tek APK, tüm ABI'leri içerir
+# (arm64-v8a, armeabi-v7a, x86_64): telefonlar ve emülatör aynı dosyayı kurar.
+#
+# Yetki ayrımı: test ve derleme işleri yalnız okuma yetkisiyle çalışır. Yazma yetkisi
+# (release + attestation) yalnız `yayin` işinde, o da yalnız etiketli çalıştırmada ve
+# üçüncü taraf kod çalıştırmadan. İmza anahtarı yalnız etiketli çalıştırmada diske iner
+# ve yalnız APK derleme adımının ortamına verilir. Tüm aksiyonlar commit SHA'sına sabit.
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          # Güvenlik kapısı önceki etiketi ve incelenen commit'i görmeli.
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Etiketli sürümde, o sürümün güvenlik incelemesi kayıtlı ve güncel değilse
+      # derleme başlamaz. Etiket adı komuta gömülmüyor, ortam değişkeninden
+      # okunuyor (script injection).
+      - name: Güvenlik kapısı
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          ETIKET: ${{ github.ref_name }}
+        run: python3 scripts/guvenlik_kapisi.py "$ETIKET"
+
+      - name: Etiket ile pubspec sürümü aynı mı
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          ETIKET: ${{ github.ref_name }}
+        run: |
+          surum="$(sed -n 's/^version: *\([0-9.]*\)+.*/\1/p' pubspec.yaml)"
+          if [ "v$surum" != "$ETIKET" ]; then
+            echo "::error::pubspec.yaml sürümü v$surum, etiket $ETIKET."
+            exit 1
+          fi
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: "3.47.5"
+          channel: stable
+
+      - name: Bağımlılıklar
+        run: flutter pub get
+
+      - name: Analiz
+        run: flutter analyze
+
+      - name: Testler (derlemeden önce)
+        run: flutter test
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: "3.47.5"
+          channel: stable
+
+      # pub get anahtarsız çalışır: paket kurulum betikleri anahtarı ve parolayı görmez.
+      - name: Bağımlılıklar
+        run: flutter pub get
+
+      # Etiketli sürümde anahtar şart: yoksa debug anahtarıyla imzalı, eskisinin
+      # üstüne kurulmayan bir APK yayımlanırdı. Etiketsiz (elle) çalıştırmada anahtar
+      # HİÇ yüklenmez: sürüm anahtarı yalnız etiketli çalıştırmaya aittir ve o APK
+      # debug imzalı, yalnız deneme artifact'ı olarak yüklenir.
+      - name: İmza anahtarını hazırla
+        id: anahtar
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          ANAHTAR_B64: ${{ secrets.BUTCE_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$ANAHTAR_B64" ]; then
+            echo "::error::BUTCE_KEYSTORE_BASE64 secret'ı yok; sürüm imzalanamaz."
+            exit 1
+          fi
+          printf '%s' "$ANAHTAR_B64" | tr -d '\r\n ' | base64 -d > "$RUNNER_TEMP/surum.jks"
+          echo "yol=$RUNNER_TEMP/surum.jks" >> "$GITHUB_OUTPUT"
+
+      # Anahtar yolu ve parola yalnız bu adımın ortamında (GITHUB_ENV'e yazılmaz).
+      # Etiketsiz çalıştırmada ikisi de boştur; build.gradle.kts boşu "anahtar yok" sayar.
+      - name: APK derle
+        env:
+          BUTCE_KEYSTORE: ${{ steps.anahtar.outputs.yol }}
+          BUTCE_KEYSTORE_PASSWORD: ${{ startsWith(github.ref, 'refs/tags/') && secrets.BUTCE_KEYSTORE_PASSWORD || '' }}
+        run: flutter build apk --release --target-platform android-arm,android-arm64,android-x64
+
+      - name: Anahtar dosyasını sil
+        if: always()
+        run: rm -f "$RUNNER_TEMP/surum.jks"
+
+      # İmzayı gerçekten doğrula ve sertifika özetini kayda geçir: release
+      # notundaki parmak izi, kullanıcının APK'yı kontrol edebileceği değer.
+      - name: İmzayı doğrula, dosyayı adlandır
+        id: apk
+        env:
+          ETIKET: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'deneme' }}
+        run: |
+          apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
+          "$apksigner" verify --print-certs build/app/outputs/flutter-apk/app-release.apk | tee imza.txt
+          ad="Butce-Takip-${ETIKET#v}.apk"
+          mkdir -p cikti
+          cp build/app/outputs/flutter-apk/app-release.apk "cikti/$ad"
+          (cd cikti && sha256sum "$ad" > SHA256SUMS.txt)
+          cat cikti/SHA256SUMS.txt
+          ls -l "cikti/$ad"
+          unzip -l "cikti/$ad" | grep -o 'lib/[a-z0-9_-]*/' | sort -u
+          echo "ad=$ad" >> "$GITHUB_OUTPUT"
+
+      # Yayın işine ve (elle çalıştırmada) denemeye aynı dosyalar gider.
+      - name: Derleme çıktısını yükle
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Butce-Takip-apk
+          path: cikti/
+          if-no-files-found: error
+
+  yayin:
+    # Yalnız etiketli çalıştırma: taslak release + attestation. Yazma yetkisi yalnız burada.
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: Butce-Takip-apk
+          path: cikti
+
+      - name: Dosya adını bul
+        id: apk
+        run: echo "ad=$(cd cikti && ls Butce-Takip-*.apk)" >> "$GITHUB_OUTPUT"
+
+      - name: Build provenance attestation üret
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
+        with:
+          subject-path: cikti/${{ steps.apk.outputs.ad }}
+
+      - name: Taslak (draft) release oluştur
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ETIKET: ${{ github.ref_name }}
+          AD: ${{ steps.apk.outputs.ad }}
+          REPO: ${{ github.repository }}
+        run: >
+          gh release create "$ETIKET"
+          "cikti/$AD" cikti/SHA256SUMS.txt
+          --repo "$REPO"
+          --draft
+          --title "Bütçe Takip $ETIKET"
+          --notes ""

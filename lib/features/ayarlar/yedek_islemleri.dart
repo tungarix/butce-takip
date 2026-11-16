@@ -9,8 +9,13 @@ import '../../data/yedek.dart';
 import '../../platform/yedek_dosyasi.dart';
 import '../../ui_metin.dart';
 
-/// JSON yedeği paylaşım sayfasına verir; paylaşıldıysa son yedek zamanını yazar.
-Future<void> yedekle(BuildContext context, WidgetRef ref) async {
+/// JSON yedeği dosyaya kaydeder ([paylas] false) ya da paylaşım sayfasına verir.
+/// Kaydedildiyse/paylaşıldıysa son yedek zamanını yazar; vazgeçilirse yazmaz.
+Future<void> yedekle(
+  BuildContext context,
+  WidgetRef ref, {
+  required bool paylas,
+}) async {
   // Özet'teki kart yedek yazılınca kalkar; bağlama ve ref'e await'ten önce erişilir.
   final mesaj = ScaffoldMessenger.of(context);
   final db = ref.read(databaseProvider);
@@ -19,7 +24,7 @@ Future<void> yedekle(BuildContext context, WidgetRef ref) async {
   try {
     final json = await yedekOlustur(db, simdi: simdi.millisecondsSinceEpoch);
     final ad = 'butce-takip-yedek-${gunAnahtari(simdi)}.json';
-    if (await dosya.paylas(json, ad)) {
+    if (await (paylas ? dosya.paylas(json, ad) : dosya.kaydet(json, ad))) {
       await db.ayarYaz(
         sonYedekAnahtari,
         '${DateTime.now().millisecondsSinceEpoch}',

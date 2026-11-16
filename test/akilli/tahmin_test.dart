@@ -21,6 +21,21 @@ void main() {
     expect(ayTahmini(giderler: [], bugun: 20260306, buAyHarcanan: 1000), 1000);
   });
 
+  test('bu ay ve son 14 günde hiç gider yoksa null (0 tahmin edilmez)', () {
+    expect(ayTahmini(giderler: [], bugun: 20260320, buAyHarcanan: 0), isNull);
+    // Eski (14 günden önceki) gider de tahmini sıfırdan çıkarmaz.
+    expect(
+      ayTahmini(
+        giderler: [_g(20260201, 5000)],
+        bugun: 20260320,
+        buAyHarcanan: 0,
+      ),
+      isNull,
+    );
+    // Yalnız bu ay harcanmış: tahmin en az o kadar.
+    expect(ayTahmini(giderler: [], bugun: 20260320, buAyHarcanan: 100), 100);
+  });
+
   test('sabit tarihlerle beklenen değer: harcanan + kalan gün * (son 14 gün ~/ 14)', () {
     // 15 Mart (31 gün): kalan 16. Son 14 gün 2-15 Mar: 14000 + 14000 -> 2000/gün. 1 Mar dışında kalır.
     final giderler = [

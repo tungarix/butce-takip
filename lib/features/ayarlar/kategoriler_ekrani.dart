@@ -6,6 +6,7 @@ import '../../data/database/database.dart';
 import '../../data/providers.dart';
 import '../../platform/bildirimler.dart';
 import '../../ui_metin.dart';
+import '../alt_bosluk.dart';
 import '../ikonlar.dart';
 import '../tus_takimi.dart';
 
@@ -58,6 +59,7 @@ class KategorilerEkrani extends ConsumerWidget {
           : liste == null
           ? const SizedBox()
           : ListView(
+              padding: EdgeInsets.only(bottom: altBosluk(context)),
               children: [
                 bolum(giderKategorileri, giderKategorisiEkle, false),
                 bolum(gelirKategorileri, gelirKategorisiEkle, true),
@@ -292,7 +294,7 @@ class _LimitSayfasiState extends ConsumerState<LimitSayfasi> {
   Widget build(BuildContext context) {
     final tema = Theme.of(context);
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      padding: EdgeInsets.only(bottom: altBosluk(context)),
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

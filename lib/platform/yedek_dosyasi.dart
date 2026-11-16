@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +16,10 @@ const _yedekOnEki = 'butce-takip-yedek-';
 abstract class YedekDosyasi {
   /// Kullanıcının seçtiği yedeğin metni; vazgeçtiyse null.
   Future<String?> sec();
+
+  /// Sistemin "belge oluştur" seçicisini açar; kullanıcı konumu seçer (depolama izni gerekmez).
+  /// Kaydedildiyse true, kullanıcı vazgeçtiyse false.
+  Future<bool> kaydet(String json, String dosyaAdi);
 
   /// [json]'u geçici dosyaya yazıp paylaşım sayfasını açar. Kullanıcı kapattıysa false.
   Future<bool> paylas(String json, String dosyaAdi);
@@ -37,6 +42,16 @@ class SistemYedekDosyasi implements YedekDosyasi {
       throw const FormatException('Dosya çok büyük.');
     }
     return utf8.decode(bayt);
+  }
+
+  @override
+  Future<bool> kaydet(String json, String dosyaAdi) async {
+    final uri = await FilePicker.saveFile(
+      fileName: dosyaAdi,
+      bytes: Uint8List.fromList(utf8.encode(json)),
+      mimeType: 'application/json',
+    );
+    return uri != null;
   }
 
   @override

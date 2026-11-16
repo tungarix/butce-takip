@@ -17,10 +17,20 @@ class SahteYedekDosyasi implements YedekDosyasi {
   String? secilen;
   final paylasilan = <String>[];
   final adlar = <String>[];
+  final kaydedilen = <String>[];
+  final kaydedilenAdlar = <String>[];
   bool paylasildi = true;
+  bool kaydedildi = true;
 
   @override
   Future<String?> sec() async => secilen;
+
+  @override
+  Future<bool> kaydet(String json, String dosyaAdi) async {
+    kaydedilen.add(json);
+    kaydedilenAdlar.add(dosyaAdi);
+    return kaydedildi;
+  }
 
   @override
   Future<bool> paylas(String json, String dosyaAdi) async {
@@ -165,12 +175,65 @@ void main() {
       );
       await t.tap(find.text(sekmeAyarlar).first);
       await bekle(t);
-      await t.tap(find.byKey(const ValueKey('yedekle')));
+      await t.tap(find.byKey(const ValueKey('yedek-paylas')));
       await bekle(t);
 
       expect(dosya.paylasilan, hasLength(1));
       expect(dosya.adlar.single, matches(r'^butce-takip-yedek-\d{8}\.json$'));
       expect(await t.runAsync(() => db.ayarOku(sonYedekAnahtari)), isNotNull);
+    });
+
+    uiTest(
+      'Dosyaya kaydet: tarihli ad, geçerli yedek, son yedek zamanı yazılır',
+      (t) async {
+        telefonBoyutu(t);
+        final db = await bellekDb(t);
+        await islem(t, db, 20260310, 500);
+        final dosya = SahteYedekDosyasi();
+        await uygulamaAc(
+          t,
+          db,
+          ekstra: [bugunSabit, yedekDosyasiProvider.overrideWithValue(dosya)],
+        );
+        await t.tap(find.text(sekmeAyarlar).first);
+        await bekle(t);
+        await t.tap(find.byKey(const ValueKey('yedek-kaydet')));
+        await bekle(t);
+
+        expect(dosya.paylasilan, isEmpty, reason: 'paylaşım sayfası açılmaz');
+        expect(
+          dosya.kaydedilenAdlar.single,
+          matches(r'^butce-takip-yedek-\d{8}\.json$'),
+        );
+        expect(
+          yedekDogrula(
+            dosya.kaydedilen.single,
+            guncelSurum: db.schemaVersion,
+          ).transactions,
+          hasLength(1),
+        );
+        expect(await t.runAsync(() => db.ayarOku(sonYedekAnahtari)), isNotNull);
+      },
+    );
+
+    uiTest('Dosyaya kaydet iptal edilirse son yedek zamanı yazılmaz', (
+      t,
+    ) async {
+      telefonBoyutu(t);
+      final db = await bellekDb(t);
+      final dosya = SahteYedekDosyasi()..kaydedildi = false;
+      await uygulamaAc(
+        t,
+        db,
+        ekstra: [bugunSabit, yedekDosyasiProvider.overrideWithValue(dosya)],
+      );
+      await t.tap(find.text(sekmeAyarlar).first);
+      await bekle(t);
+      await t.tap(find.byKey(const ValueKey('yedek-kaydet')));
+      await bekle(t);
+
+      expect(dosya.kaydedilen, hasLength(1));
+      expect(await t.runAsync(() => db.ayarOku(sonYedekAnahtari)), isNull);
     });
 
     uiTest('paylaşım sayfası kapatılırsa son yedek zamanı yazılmaz', (t) async {
@@ -184,7 +247,7 @@ void main() {
       );
       await t.tap(find.text(sekmeAyarlar).first);
       await bekle(t);
-      await t.tap(find.byKey(const ValueKey('yedekle')));
+      await t.tap(find.byKey(const ValueKey('yedek-paylas')));
       await bekle(t);
 
       expect(await t.runAsync(() => db.ayarOku(sonYedekAnahtari)), isNull);
@@ -226,7 +289,7 @@ void main() {
       );
     });
 
-    uiTest('Yedekle düğmesi paylaşımı açar ve kart kalkar', (t) async {
+    uiTest('Yedekle düğmesi dosyaya kaydeder ve kart kalkar', (t) async {
       telefonBoyutu(t);
       final db = await bellekDb(t);
       await islem(t, db, 20260310, 500);
@@ -244,7 +307,8 @@ void main() {
       );
       await t.tap(find.byKey(const ValueKey('yedek-yedekle')));
       await bekle(t);
-      expect(dosya.paylasilan, hasLength(1));
+      expect(dosya.kaydedilen, hasLength(1));
+      expect(dosya.paylasilan, isEmpty);
       expect(find.byKey(const ValueKey('yedek-karti')), findsNothing);
     });
   });

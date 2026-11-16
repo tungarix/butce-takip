@@ -90,8 +90,10 @@ String uyariMetni(String ad, int esik) => esik >= 100
     : "$ad bütçesinin %$esik'i doldu";
 
 // Yedek
-const yedekleBaslik = 'Yedekle';
-const yedekleAltyazi = 'Verilerini bir dosya olarak kaydet ya da paylaş';
+const yedekKaydetBaslik = 'Dosyaya kaydet';
+const yedekKaydetAltyazi = 'Yedeği telefonda seçtiğin bir konuma kaydet';
+const yedekPaylasBaslik = 'Paylaş';
+const yedekPaylasAltyazi = 'Yedeği başka bir uygulamayla paylaş';
 const geriYukleBaslik = 'Geri yükle';
 const geriYukleAltyazi = 'Bir yedek dosyasından verileri geri getir';
 const yedekHatirlatmaMetni =

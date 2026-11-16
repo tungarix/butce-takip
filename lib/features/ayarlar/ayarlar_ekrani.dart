@@ -14,6 +14,8 @@ class AyarlarEkrani extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
     appBar: AppBar(title: const Text(sekmeAyarlar)),
     body: ListView(
+      // FAB son satırı kapatmasın.
+      padding: const EdgeInsets.only(bottom: 88),
       children: [
         ListTile(
           leading: const Icon(Icons.category_outlined),
@@ -26,11 +28,18 @@ class AyarlarEkrani extends ConsumerWidget {
           ),
         ),
         ListTile(
-          key: const ValueKey('yedekle'),
-          leading: const Icon(Icons.upload_file_outlined),
-          title: const Text(yedekleBaslik),
-          subtitle: const Text(yedekleAltyazi),
-          onTap: () => yedekle(context, ref),
+          key: const ValueKey('yedek-kaydet'),
+          leading: const Icon(Icons.save_alt_outlined),
+          title: const Text(yedekKaydetBaslik),
+          subtitle: const Text(yedekKaydetAltyazi),
+          onTap: () => yedekle(context, ref, paylas: false),
+        ),
+        ListTile(
+          key: const ValueKey('yedek-paylas'),
+          leading: const Icon(Icons.share_outlined),
+          title: const Text(yedekPaylasBaslik),
+          subtitle: const Text(yedekPaylasAltyazi),
+          onTap: () => yedekle(context, ref, paylas: true),
         ),
         ListTile(
           key: const ValueKey('geri-yukle'),

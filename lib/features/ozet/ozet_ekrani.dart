@@ -440,8 +440,8 @@ class _YedekKarti extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(yedekHatirlatmaMetni),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            OverflowBar(
+              alignment: MainAxisAlignment.end,
               children: [
                 TextButton(
                   key: const ValueKey('yedek-sonra'),
@@ -453,8 +453,8 @@ class _YedekKarti extends ConsumerWidget {
                 ),
                 FilledButton.tonal(
                   key: const ValueKey('yedek-yedekle'),
-                  onPressed: () => yedekle(context, ref),
-                  child: const Text(yedekleBaslik),
+                  onPressed: () => yedekle(context, ref, paylas: false),
+                  child: const Text(yedekKaydetBaslik),
                 ),
               ],
             ),

@@ -12,6 +12,7 @@ import '../../data/database/database.dart';
 import '../../data/providers.dart';
 import '../../platform/bildirimler.dart';
 import '../../ui_metin.dart';
+import '../alt_bosluk.dart';
 import '../ikonlar.dart';
 import '../tus_takimi.dart';
 
@@ -258,7 +259,7 @@ class _HizliGirisState extends ConsumerState<HizliGirisSayfasi> {
     final tema = Theme.of(context);
 
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      padding: EdgeInsets.only(bottom: altBosluk(context)),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
         child: Column(

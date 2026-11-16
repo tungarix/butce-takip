@@ -2,7 +2,7 @@
 import '../core/tarih.dart';
 import 'tekrar_tespit.dart';
 
-/// İçinde bulunulan ayın sonu için yaklaşık gider (kuruş); ayın ilk 5 gününde null.
+/// İçinde bulunulan ayın sonu için yaklaşık gider (kuruş); ayın ilk 5 gününde ya da hiç gider yokken null.
 /// tahmin = buAyHarcanan + kalanGün * (son 14 günün gideri ~/ 14) + bu ay beklenen, gerçekleşmemiş
 /// tekrarlayanlar. Çift sayım olmasın diye tekrarlayan gruplara ait işlemler 14 günlük ortalamaya girmez.
 /// [giderler]: son 120 günün gider işlemleri. [buAyHarcanan]: bu ayın toplam gideri.
@@ -42,5 +42,7 @@ int? ayTahmini({
       if (e >= ayIlk && e >= enEski) beklenen += g.tutar;
     }
   }
-  return buAyHarcanan + (ayGun - gun) * (son14 ~/ 14) + beklenen;
+  final tahmin = buAyHarcanan + (ayGun - gun) * (son14 ~/ 14) + beklenen;
+  // Bu ay ve son 14 günde hiç gider yok: "yaklaşık 0 harcarsın" veri değil, veri yokluğudur.
+  return tahmin == 0 ? null : tahmin;
 }

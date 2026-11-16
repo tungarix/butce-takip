@@ -15,12 +15,20 @@
 param(
     [string]$Klasor = (Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'butce-takip-imza'),
     [string]$Yedek = 'D:\Yedek-Imza-Anahtarlari',
-    [string]$Repo = 'tungarix/butce-takip'
+    [string]$Repo = 'tungarix/butce-takip',
+    # Anahtar zaten varsa yeni anahtar ÜRETMEZ; mevcut anahtarı ve parolayı secret'lara yeniden yükler.
+    [switch]$YalnizSecret
 )
 $ErrorActionPreference = 'Stop'
 
+# gh'ye stdin'den giden değerin başına UTF-8 BOM eklenmesin: BOM'lu secret, CI'da
+# "base64: invalid input" verir ve parolayı da bozar (v0.1.0'ın ilk derlemesi böyle düştü).
+[Console]::InputEncoding = New-Object Text.UTF8Encoding($false)
+
 $anahtar = Join-Path $Klasor 'butce-surum.jks'
-if (Test-Path $anahtar) {
+if ($YalnizSecret) {
+    if (-not (Test-Path $anahtar)) { throw "Anahtar yok: $anahtar." }
+} elseif (Test-Path $anahtar) {
     throw "Anahtar zaten var: $anahtar. Üzerine yazılmaz; yeni anahtar eski APK'larla uyumsuz olur."
 }
 
@@ -38,6 +46,11 @@ if (-not $keytool) {
 }
 if (-not $keytool -or -not (Test-Path $keytool)) { throw 'keytool bulunamadı (Java ile gelir).' }
 
+if ($YalnizSecret) {
+    $sifre = [pscredential]::new('x', (Get-Content (Join-Path $Klasor 'sifre.dpapi') | ConvertTo-SecureString)).GetNetworkCredential().Password
+    $env:BUTCE_ANAHTAR_PAROLA = $sifre
+    $ErrorActionPreference = 'Continue'
+} else {
 New-Item -ItemType Directory -Force $Klasor | Out-Null
 
 # 32 karakter rastgele parola (harf + rakam; keytool argümanında kaçış gerektirmez).
@@ -71,6 +84,7 @@ Kurtarma: sifre.dpapi yalnız bu Windows kullanıcısı bu makinede çözebilir:
 GitHub secret'ları: BUTCE_KEYSTORE_BASE64, BUTCE_KEYSTORE_PASSWORD ($Repo).
 Bu klasörü yedekle. Kaybolursa sonraki APK'lar eskisinin üstüne kurulmaz.
 "@ | Set-Content -Path (Join-Path $Klasor 'BENIOKU.txt') -Encoding utf8
+}
 
 # Secret'lar stdin'den gider (komut satırında görünmez). PowerShell pipe'ı sona satır sonu
 # eklerdi; bu yüzden süreç doğrudan açılıp baytlar sonsuz satırsız yazılır.

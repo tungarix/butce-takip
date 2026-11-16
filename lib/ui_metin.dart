@@ -99,6 +99,7 @@ const geriYukleAltyazi = 'Bir yedek dosyasından verileri geri getir';
 const yedekHatirlatmaMetni =
     'Verilerin yalnız bu telefonda. Yedek almak ister misin?';
 const yedekSonraEtiket = 'Sonra';
+const yedekOkunamadi = 'Yedek dosyası okunamadı ya da bozuk.';
 const yedekHatasi = 'Yedek alınamadı. Tekrar dene.';
 const dosyaOkunamadi = 'Dosya okunamadı. Başka bir dosya seçmeyi dene.';
 const geriYuklemeBaslik = 'Geri yüklensin mi?';

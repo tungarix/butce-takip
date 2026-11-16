@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import '../core/para.dart';
 import '../core/tarih.dart';
 import 'database/database.dart';
 
@@ -14,6 +15,13 @@ class YedekHatasi implements Exception {
   @override
   String toString() => mesaj;
 }
+
+// 2000-01-01 ve 2100-01-01 (epoch ms, UTC).
+const _enErkenOlusturuldu = 946684800000;
+const _enGecOlusturuldu = 4102444800000;
+// Büyük kimlik SQLite AUTOINCREMENT sayacını tavana kilitler; 2^53 makul sınır.
+const _enBuyukId = 9007199254740992;
+const _enBuyukSayac = 1000000000;
 
 typedef Satir = Map<String, Object?>;
 
@@ -83,13 +91,16 @@ Yedek yedekDogrula(String metin, {required int guncelSurum}) {
     );
   }
   final olusturuldu = _tamsayi(kok, 'olusturuldu', 'yedek');
+  if (olusturuldu < _enErkenOlusturuldu || olusturuldu > _enGecOlusturuldu) {
+    throw const YedekHatasi('Yedeğin oluşturulma tarihi geçersiz.');
+  }
 
   final kategoriler = _liste(kok, 'categories');
   final kategoriIdleri = <int>{};
   final adlar = <String>{};
   for (final r in kategoriler) {
     const t = 'categories';
-    if (!kategoriIdleri.add(_tamsayi(r, 'id', t))) {
+    if (!kategoriIdleri.add(_kimlik(r, 'id', t))) {
       throw const YedekHatasi('Yedekte aynı numaralı iki kategori var.');
     }
     final ad = _yazi(r, 'name', t);
@@ -115,11 +126,15 @@ Yedek yedekDogrula(String metin, {required int guncelSurum}) {
   final islemIdleri = <int>{};
   for (final r in islemler) {
     const t = 'transactions';
-    if (!islemIdleri.add(_tamsayi(r, 'id', t))) {
+    if (!islemIdleri.add(_kimlik(r, 'id', t))) {
       throw const YedekHatasi('Yedekte aynı numaralı iki işlem var.');
     }
-    if (_tamsayi(r, 'amountKurus', t) <= 0) {
+    final tutar = _tamsayi(r, 'amountKurus', t);
+    if (tutar <= 0) {
       throw const YedekHatasi('Yedekte tutarı sıfır ya da eksi bir işlem var.');
+    }
+    if (tutar > paraUstSinirKurus) {
+      throw const YedekHatasi('Yedekte tutarı çok büyük bir işlem var.');
     }
     _mantiksal(r, 'isIncome', t);
     kategoriVar(r, t);
@@ -139,8 +154,12 @@ Yedek yedekDogrula(String metin, {required int guncelSurum}) {
     if (!limitKategorileri.add(r['categoryId']! as int)) {
       throw const YedekHatasi('Yedekte bir kategori için iki limit var.');
     }
-    if (_tamsayi(r, 'monthlyLimitKurus', t) <= 0) {
+    final limit = _tamsayi(r, 'monthlyLimitKurus', t);
+    if (limit <= 0) {
       throw const YedekHatasi('Yedekte sıfır ya da eksi bir limit var.');
+    }
+    if (limit > paraUstSinirKurus) {
+      throw const YedekHatasi('Yedekte çok büyük bir limit var.');
     }
   }
 
@@ -153,8 +172,12 @@ Yedek yedekDogrula(String metin, {required int guncelSurum}) {
     if (!sozcukCiftleri.add('${r['categoryId']}|$k')) {
       throw const YedekHatasi('Yedekte yinelenen anahtar sözcük kaydı var.');
     }
-    if (_tamsayi(r, 'hits', t) < 0) {
+    final sayac = _tamsayi(r, 'hits', t);
+    if (sayac < 0) {
       throw const YedekHatasi('Yedekte eksi sayaçlı anahtar sözcük var.');
+    }
+    if (sayac > _enBuyukSayac) {
+      throw const YedekHatasi('Yedekte sayacı çok büyük anahtar sözcük var.');
     }
   }
 
@@ -261,6 +284,14 @@ int _tamsayi(Map<String, Object?> r, String alan, String bolum) {
   final v = r[alan];
   if (v is int) return v;
   throw YedekHatasi('Yedekte $bolum.$alan alanı eksik ya da tam sayı değil.');
+}
+
+int _kimlik(Map<String, Object?> r, String alan, String bolum) {
+  final v = _tamsayi(r, alan, bolum);
+  if (v < 1 || v > _enBuyukId) {
+    throw YedekHatasi('Yedekte $bolum.$alan numarası geçersiz.');
+  }
+  return v;
 }
 
 String _yazi(Map<String, Object?> r, String alan, String bolum) {

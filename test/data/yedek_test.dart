@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:butce_takip/core/para.dart';
 import 'package:butce_takip/core/tarih.dart';
 import 'package:butce_takip/data/database/database.dart';
 import 'package:butce_takip/data/yedek.dart';
@@ -37,7 +38,7 @@ Future<void> doldur(AppDatabase db) async {
 }
 
 /// Tablo içeriğinin tam dökümü (olusturuldu sabit): iki veritabanı birebir eşit mi.
-Future<String> dokum(AppDatabase db) => yedekOlustur(db, simdi: 1);
+Future<String> dokum(AppDatabase db) => yedekOlustur(db, simdi: 1700000000000);
 
 Future<int> toplam(AppDatabase db, bool gelir) async {
   final l = await db.select(db.transactions).get();
@@ -48,7 +49,7 @@ Future<int> toplam(AppDatabase db, bool gelir) async {
 
 // Sabit yedek: iki kategorili küçük veri, veritabanından bağımsız.
 const yedekMetniSabit =
-    '{"uygulama":"butce-takip","schemaVersion":1,"olusturuldu":1000,'
+    '{"uygulama":"butce-takip","schemaVersion":1,"olusturuldu":1700000000000,'
     '"categories":[{"id":1,"name":"Market","icon":0,"isIncome":false,"sortOrder":0,"archived":false},'
     '{"id":2,"name":"Maaş","icon":9,"isIncome":true,"sortOrder":1,"archived":false}],'
     '"transactions":[{"id":1,"amountKurus":1000,"isIncome":false,"categoryId":1,"note":"a","noteNorm":"a","day":20260305,"createdAt":5},'
@@ -65,6 +66,15 @@ String islemAlan(String alan, Object? deger) {
   (m['transactions'] as List).first[alan] = deger;
   return jsonEncode(m);
 }
+
+String sinirDegeri(String bolum, String alan, Object? deger) {
+  final m = temel();
+  (m[bolum] as List).first[alan] = deger;
+  return jsonEncode(m);
+}
+
+const enBuyukId = 9223372036854775807; // 2^63-1
+const kabulSiniri = 9007199254740992; // 2^53
 
 void main() {
   // İki bellek içi veritabanı bilerek aynı anda açık.
@@ -141,6 +151,19 @@ void main() {
       'tutar sıfır': () => islemAlan('amountKurus', 0),
       'tutar ondalıklı': () => islemAlan('amountKurus', 10.5),
       'tutar metin': () => islemAlan('amountKurus', '100'),
+      'işlem id = 2^63-1': () => islemAlan('id', enBuyukId),
+      'işlem id = 0': () => islemAlan('id', 0),
+      'işlem id = 2^53+1': () => islemAlan('id', kabulSiniri + 1),
+      'kategori id = 2^63-1': () => sinirDegeri('categories', 'id', enBuyukId),
+      'tutar = üst sınır + 1': () =>
+          islemAlan('amountKurus', paraUstSinirKurus + 1),
+      'limit = üst sınır + 1': () =>
+          sinirDegeri('budgets', 'monthlyLimitKurus', paraUstSinirKurus + 1),
+      'sözcük sayacı çok büyük': () =>
+          sinirDegeri('keyword_hits', 'hits', 1000000001),
+      'olusturuldu = 0': () => jsonEncode(temel()..['olusturuldu'] = 0),
+      'olusturuldu çok büyük': () =>
+          jsonEncode(temel()..['olusturuldu'] = 9007199254740991),
       'geçersiz gün (30 Şubat)': () => islemAlan('day', 20260230),
       'geçersiz gün (13. ay)': () => islemAlan('day', 20261301),
       'geçersiz gün (sıfır)': () => islemAlan('day', 0),
@@ -181,6 +204,30 @@ void main() {
       expect(y.transactions, hasLength(2));
     });
 
+    test('sınırdaki geçerli değerler kabul edilir ve uygulanır', () async {
+      final m = temel();
+      (m['transactions'] as List).first['id'] = kabulSiniri;
+      (m['transactions'] as List).first['amountKurus'] = paraUstSinirKurus;
+      (m['budgets'] as List).first['monthlyLimitKurus'] = paraUstSinirKurus;
+      final y = yedekDogrula(jsonEncode(m), guncelSurum: 1);
+      await yedegiUygula(hedef, y);
+      final l = await hedef.select(hedef.transactions).get();
+      expect(l.map((t) => t.id), contains(kabulSiniri));
+    });
+
+    test('ret mesajı neyin yanlış olduğunu söyler', () {
+      expect(
+        () => yedekDogrula(islemAlan('id', enBuyukId), guncelSurum: 1),
+        throwsA(
+          isA<YedekHatasi>().having(
+            (e) => e.mesaj,
+            'mesaj',
+            contains('numara'),
+          ),
+        ),
+      );
+    });
+
     test('daha yeni sürüm Türkçe açıklamayla reddedilir', () {
       expect(
         () => yedekDogrula(
@@ -206,7 +253,7 @@ void main() {
       // Doğrulamayı atlayan bozuk yedek: son işlem olmayan kategoriye bağlı, dış anahtar patlar.
       final bozuk = Yedek(
         schemaVersion: 1,
-        olusturuldu: 1,
+        olusturuldu: 1700000000000,
         categories: temiz.categories,
         transactions: [
           ...temiz.transactions,

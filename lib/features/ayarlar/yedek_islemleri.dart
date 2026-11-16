@@ -51,24 +51,31 @@ Future<void> geriYukle(BuildContext context, WidgetRef ref) async {
   }
   if (metin == null) return;
   final Yedek yedek;
+  final String ozet;
   try {
     yedek = yedekDogrula(metin, guncelSurum: db.schemaVersion);
+    final tarih = DateFormat(
+      'd MMMM y',
+      'tr_TR',
+    ).format(DateTime.fromMillisecondsSinceEpoch(yedek.olusturuldu));
+    ozet = yedekOzeti(
+      yedek.transactions.length,
+      yedek.categories.length,
+      tarih,
+    );
   } on YedekHatasi catch (e) {
     soyle(e.mesaj);
     return;
+  } catch (_) {
+    soyle(yedekOkunamadi);
+    return;
   }
   if (!context.mounted) return;
-  final tarih = DateFormat(
-    'd MMMM y',
-    'tr_TR',
-  ).format(DateTime.fromMillisecondsSinceEpoch(yedek.olusturuldu));
   final onay = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
       title: const Text(geriYuklemeBaslik),
-      content: Text(
-        yedekOzeti(yedek.transactions.length, yedek.categories.length, tarih),
-      ),
+      content: Text(ozet),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx, false),

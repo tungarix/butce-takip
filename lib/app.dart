@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'data/providers.dart';
 import 'features/ayarlar/ayarlar_ekrani.dart';
+import 'features/ayarlar/guncelleme_bolumu.dart';
 import 'features/hizli_giris/hizli_giris.dart';
 import 'features/islemler/islemler_ekrani.dart';
 import 'features/ozet/ozet_ekrani.dart';
@@ -44,6 +45,15 @@ class _KabukState extends ConsumerState<Kabuk> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // İlk kare çizilince: denetim hiç sorulmadıysa bir kez sor, açıksa günlük denetimi çalıştır.
+    // Köprüsüz ortamda (testler) hiçbir şey yapmaz.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        await guncellemeIlkAcilis(context, ref);
+      } catch (_) {
+        // Güncelleme isteğe bağlı; uygulamayı asla engellemez.
+      }
+    });
   }
 
   @override

@@ -344,5 +344,17 @@ void main() {
       expect(find.text('Diğer gelir'), findsOneWidget);
       expect(find.byKey(const ValueKey('sil-11')), findsNothing);
     });
+
+    uiTest('Diğer satırında arşiv ve limit simgeleri Market ile aynı sütunda', (
+      t,
+    ) async {
+      telefonBoyutu(t);
+      final db = await bellekDb(t);
+      await kategorilerAc(t, db);
+      double x(String anahtar) =>
+          t.getCenter(find.byKey(ValueKey(anahtar))).dx;
+      expect(x('arsiv-9'), x('arsiv-1'));
+      expect(x('limit-9'), x('limit-1'));
+    });
   });
 }

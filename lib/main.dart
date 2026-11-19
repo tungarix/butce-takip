@@ -5,6 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'app.dart';
 import 'data/providers.dart';
 import 'platform/bildirimler.dart';
+import 'platform/kopru.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,7 +13,10 @@ Future<void> main() async {
   final bildirimler = YerelBildirimler();
   await bildirimler.baslat();
   final container = ProviderContainer(
-    overrides: [bildirimProvider.overrideWithValue(bildirimler)],
+    overrides: [
+      bildirimProvider.overrideWithValue(bildirimler),
+      kopruProvider.overrideWithValue(AndroidKopru()),
+    ],
   );
   // Veritabanını açılışta aç: şema ve tohum hatası ilk kullanımda değil burada patlasın.
   await container.read(databaseProvider).customSelect('SELECT 1').get();

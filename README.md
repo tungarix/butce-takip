@@ -1,8 +1,8 @@
 # Bütçe Takip
 
-Android için hesapsız, tamamen çevrimdışı gelir-gider takibi. Arayüz Türkçe, para birimi TL.
+Android için hesapsız, yerel gelir-gider takibi. Arayüz Türkçe, para birimi TL.
 
-**İnternet izni yok, hesap yok, veri yalnız telefonunda.** Uygulama hiçbir sunucuya bağlanmaz.
+**Hesap yok, veri yalnız telefonunda.** Yalnız güncelleme denetimi için, ve yalnız sen açarsan GitHub'a bağlanır; verilerin telefondan çıkmaz.
 
 > Durum: ilk sürüm (v0.1.0) hazırlanıyor, henüz yayımlanmadı. Plan ve kararlar: [PLAN.md](PLAN.md).
 
@@ -11,7 +11,7 @@ Android için hesapsız, tamamen çevrimdışı gelir-gider takibi. Arayüz Tür
 ## Özellikler
 
 - Gelir ve gider ekleme, düzenleme, silme (silmede "Geri al"). Hızlı giriş: tuş takımı açık gelir, en sık kullanılan kategoriler çip olarak altta.
-- 10 hazır kategori; yenisi eklenir, yeniden adlandırılır, arşivlenir (silinmez).
+- 10 hazır kategori; yenisi eklenir, yeniden adlandırılır, arşivlenir ya da silinir (silince işlemleri Diğer / Diğer gelir'e taşınır).
 - Kategori başına aylık limit ve ilerleme çubuğu.
 - Özet: bu ay harcanan, kalan ve ay sonu tahmini.
 - Cihaz içinde, kural tabanlı öneriler: nottan kategori önerisi, tekrarlayan gider önerisi, bütçe aşım bildirimi (limitin %80 ve %100'ünde).

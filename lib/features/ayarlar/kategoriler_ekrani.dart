@@ -129,7 +129,10 @@ class _KategoriSatiri extends ConsumerWidget {
               }
             },
           ),
-          if (!digerMi(c))
+          if (digerMi(c))
+            // Silinemez: düğme yerine aynı genişlikte boşluk, simgeler aynı sütunda kalsın.
+            const SizedBox(width: 48)
+          else
             IconButton(
               key: ValueKey('sil-${c.id}'),
               tooltip: '${c.name}: $silEtiket',

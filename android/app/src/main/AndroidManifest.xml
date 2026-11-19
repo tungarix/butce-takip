@@ -1,6 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Android 13+: bütçe aşım bildirimi. Çalışma anı izni ilk limit konduğunda istenir. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Güncelleme denetimi ve indirme: yalnız kullanıcı Ayarlar'dan açarsa kullanılır. Flutter release
+         manifestine INTERNET'i kendisi eklemez. Düz HTTP kapalı. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Wi-Fi ile mobil veriyi ayırmak için (varsayılan: yalnız Wi-Fi'da indir). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!-- İndirilen ve doğrulanan APK'yı sistemin kurulum penceresiyle kurmak için. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <application
         android:label="Bütçe Takip"
         android:name="${applicationName}"
@@ -34,6 +41,8 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Kurulum oturumunun sonucu (yalnız kendi uygulamamız; PackageInstaller PendingIntent'imizle çağırır). -->
+        <receiver android:name=".KurulumAlici" android:exported="false"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

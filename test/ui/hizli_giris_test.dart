@@ -186,5 +186,6 @@ void main() {
     await bekle(t);
     expect(find.text(islemDuzenleBaslik), findsOneWidget);
     expect(find.text(tarihEtiket), findsOneWidget);
+    expect(find.byKey(const ValueKey('tur')), findsOneWidget);
   });
 }

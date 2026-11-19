@@ -5,6 +5,7 @@ import '../../data/database/database.dart';
 import '../../data/providers.dart';
 import '../../surum.dart';
 import '../../ui_metin.dart';
+import 'guncelleme_bolumu.dart';
 import 'kategoriler_ekrani.dart';
 import 'yedek_islemleri.dart';
 
@@ -66,6 +67,7 @@ class AyarlarEkrani extends ConsumerWidget {
             }
           },
         ),
+        const GuncellemeBolumu(),
         Padding(
           padding: const EdgeInsets.only(top: 24),
           child: Center(

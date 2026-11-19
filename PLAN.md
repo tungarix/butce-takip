@@ -7,14 +7,14 @@ Durum: plan, kod yok (2026-11-15). Ad geçici.
 - Flutter, `habit-tracker-mobil` ile aynı yığın: drift 2.34 + drift_flutter, flutter_riverpod 3, intl,
   share_plus, file_picker, flutter_local_notifications. İskelet, `release.yml`, `ci.yml`,
   `guvenlik-kapisi.yml` ve imza ayarı oradan kopyalanır.
-- Tamamen çevrimdışı: INTERNET izni yok, hesap yok, sunucu yok. Dağıtım GitHub Release'te imzalı APK.
+- Hesap yok, sunucu yok. Yalnız güncelleme denetimi için, ve yalnız sen açarsan GitHub'a bağlanır; verilerin telefondan çıkmaz. Dağıtım GitHub Release'te imzalı APK.
 - Arayüz Türkçe, para birimi TL, tema sistemi izler.
 - "Akıllı" kısım cihaz içinde ve kural tabanlı. Model, bulut, banka bağlantısı yok.
 
 ## v1 kapsamı
 
 1. Gelir/gider ekleme, düzenleme, silme (silmede "Geri al").
-2. Kategoriler: 10 hazır, eklenir, yeniden adlandırılır, arşivlenir (silinmez).
+2. Kategoriler: 10 hazır, eklenir, yeniden adlandırılır, arşivlenir ya da silinir (silince işlemleri Diğer / Diğer gelir'e taşınır).
 3. Kategori başına aylık limit ve ilerleme çubuğu.
 4. Özet: bu ay harcanan, kalan, ay sonu tahmini.
 5. Akıllı: kategori önerisi, tekrarlayan işlem önerisi, ay sonu tahmini, bütçe aşım bildirimi.

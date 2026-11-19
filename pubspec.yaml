@@ -1,5 +1,5 @@
 name: butce_takip
-description: "Bütçe Takip: hesapsız, tamamen çevrimdışı gelir-gider takibi (Android)."
+description: "Bütçe Takip: hesapsız, yerel gelir-gider takibi (Android)."
 publish_to: 'none'
 
 version: 0.1.0+1

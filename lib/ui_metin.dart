@@ -117,3 +117,49 @@ String kategoriSilGovde(int islemSayisi, String hedefAd) => islemSayisi == 0
     ? 'Bu geri alınamaz.'
     : "İçindeki $islemSayisi işlem $hedefAd'e taşınacak. Bu geri alınamaz.";
 const kategoriSilHatasi = 'Kategori silinemedi. Tekrar dene.';
+
+// Güncellemeler.
+const guncellemeBaslik = 'Güncellemeler';
+const guncellemeDenetle = 'Güncellemeleri denetle';
+const guncellemeDenetleAciklama =
+    "Günde en çok bir kez GitHub'a sorar. Kapalıyken internet kullanılmaz.";
+const guncellemeYalnizWifi = "Yalnız Wi-Fi'da indir";
+const guncellemeSimdiDenetle = 'Şimdi denetle';
+const guncellemeDenetleniyor = 'Denetleniyor...';
+const guncellemeGuncel = 'Uygulama güncel.';
+const guncellemeHic = 'Henüz denetlenmedi.';
+String guncellemeHazir(String s) => 'Yeni sürüm hazır: $s';
+const guncellemeIndirKur = 'İndir ve kur';
+const guncellemeIndiriliyor = 'İndiriliyor ve doğrulanıyor...';
+const guncellemeKurulumAcildi =
+    "Doğrulandı. Android'in kurulum penceresinde onayla.";
+
+/// PackageInstaller durum kodu (başarı olan 0 hiç gelmez).
+String guncellemeKurulumSonucu(int durum) => switch (durum) {
+  3 => 'Kurulum iptal edildi.',
+  6 => 'Telefonda yeterli yer yok, kurulmadı.',
+  7 => 'Yeni sürümün imzası kurulu uygulamayla uyuşmuyor, kurulmadı.',
+  _ => 'Kurulum tamamlanamadı (kod $durum).',
+};
+const guncellemeIlkBaslik = 'Güncellemeler denetlensin mi?';
+const guncellemeIlkGovde =
+    "Uygulama günde en çok bir kez GitHub'a bağlanıp yeni sürüm olup "
+    'olmadığına bakabilir. Kişisel veri gönderilmez, verilerin telefondan '
+    "çıkmaz. İndirme yalnız Wi-Fi'da yapılır. İstersen Ayarlar'dan "
+    'değiştirebilirsin.';
+const guncellemeIlkHayir = 'Hayır';
+const guncellemeIlkEvet = 'Evet, denetle';
+const guncellemeMobilBaslik = 'Mobil veriyle indirilsin mi?';
+const guncellemeMobilGovde =
+    "Şu an Wi-Fi'da değilsin. Güncelleme dosyası büyük olabilir.";
+const guncellemeMobilEvet = 'Mobil veriyle indir';
+String guncellemeHata(String kod) => switch (kod) {
+  'ag_yok' => 'İnternet bağlantısı yok.',
+  'wifi_gerek' => "İndirme Wi-Fi'ı bekliyor.",
+  'izin_yok' => 'Bu uygulamaya kurulum izni ver, sonra geri dönüp tekrar dene.',
+  'depo_dolu' => 'Telefonda yeterli yer yok, güncelleme indirilemedi.',
+  'ozet_uyusmuyor' ||
+  'ozet_bulunamadi' => 'İndirilen dosya doğrulanamadı, kurulmadı.',
+  'ag_hatasi' || 'limit' => 'İndirme tamamlanamadı, sonra tekrar dene.',
+  _ => 'Güncelleme yapılamadı ($kod).',
+};

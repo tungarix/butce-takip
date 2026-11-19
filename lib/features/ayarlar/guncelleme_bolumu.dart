@@ -48,6 +48,8 @@ Future<void> guncellemeIlkAcilis(BuildContext context, WidgetRef ref) async {
     await g.denetimYaz(evet ?? false);
   }
   await g.otomatikAdim();
+  // Ayarlar sekmesi baştan kurulu: değişen nesneyi (durum veritabanında) yeniden yükletip bölümü çizdir.
+  ref.invalidate(guncelleyiciProvider);
 }
 
 class GuncellemeBolumu extends ConsumerStatefulWidget {

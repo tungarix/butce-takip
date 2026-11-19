@@ -45,8 +45,12 @@ class TekrarGrubu {
 }
 
 /// Not boşsa kategori + tutar, doluysa normalize not.
-String tekrarAnahtari(GiderKaydi g) =>
-    g.noteNorm.isNotEmpty ? 'n:${g.noteNorm}' : 'k:${g.kategoriId}:${g.tutar}';
+String tekrarAnahtari(GiderKaydi g) => g.noteNorm.isNotEmpty
+    ? 'n:${g.noteNorm}'
+    : '${tekrarKategoriOnEki(g.kategoriId)}${g.tutar}';
+
+/// Notsuz tekrar anahtarlarının kategoriye özel başı (ayraç dahil).
+String tekrarKategoriOnEki(int kategoriId) => 'k:$kategoriId:';
 
 int _medyan(List<int> l) {
   final s = [...l]..sort();

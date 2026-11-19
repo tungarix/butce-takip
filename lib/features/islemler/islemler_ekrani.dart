@@ -35,8 +35,12 @@ class _IslemlerEkraniState extends ConsumerState<IslemlerEkrani> {
         action: SnackBarAction(
           label: geriAlEtiket,
           onPressed: () async {
-            await db.islemGeriYukle(t);
-            if (mounted) setState(() => _gizli.remove(t.id));
+            try {
+              await db.islemGeriYukle(t);
+              if (mounted) setState(() => _gizli.remove(t.id));
+            } catch (_) {
+              mesaj.showSnackBar(const SnackBar(content: Text(geriAlHatasi)));
+            }
           },
         ),
       ),

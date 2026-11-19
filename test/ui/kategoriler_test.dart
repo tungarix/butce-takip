@@ -1,6 +1,7 @@
 import 'package:butce_takip/core/tarih.dart';
 import 'package:butce_takip/data/database/database.dart';
 import 'package:butce_takip/ui_metin.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -331,6 +332,39 @@ void main() {
       },
     );
 
+    uiTest('Silme hedefi adı karşı türde kullanılıyorsa ne yapılacağı yazar', (
+      t,
+    ) async {
+      telefonBoyutu(t);
+      final db = await bellekDb(t);
+      await t.runAsync(() async {
+        await db.kategoriGuncelle(9, ad: 'Başka', simge: 8);
+        // Yedekten gelmiş çakışma: gelir türünde 'Diğer'.
+        await db
+            .into(db.categories)
+            .insert(
+              CategoriesCompanion.insert(
+                name: 'Diğer',
+                icon: 1,
+                isIncome: const Value(true),
+                sortOrder: 99,
+              ),
+            );
+      });
+      await kategorilerAc(t, db);
+
+      await t.tap(find.byTooltip('Market: $silEtiket'));
+      await bekle(t);
+      await t.tap(find.byKey(const ValueKey('sil-onay')));
+      await bekle(t);
+
+      expect(
+        find.textContaining('Önce gelir kategorilerindeki'),
+        findsOneWidget,
+      );
+      expect(find.text('Market'), findsOneWidget);
+    });
+
     uiTest('Diğer ve Diğer gelir satırında sil düğmesi yok', (t) async {
       telefonBoyutu(t);
       final db = await bellekDb(t);
@@ -351,8 +385,7 @@ void main() {
       telefonBoyutu(t);
       final db = await bellekDb(t);
       await kategorilerAc(t, db);
-      double x(String anahtar) =>
-          t.getCenter(find.byKey(ValueKey(anahtar))).dx;
+      double x(String anahtar) => t.getCenter(find.byKey(ValueKey(anahtar))).dx;
       expect(x('arsiv-9'), x('arsiv-1'));
       expect(x('limit-9'), x('limit-1'));
     });

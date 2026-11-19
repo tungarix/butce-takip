@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:drift/drift.dart'
+    show BooleanExpressionOperators, StringExpressionOperators;
+
 import '../core/para.dart';
 import '../core/tarih.dart';
 import 'database/database.dart';
@@ -22,6 +25,10 @@ const _enGecOlusturuldu = 4102444800000;
 // Büyük kimlik SQLite AUTOINCREMENT sayacını tavana kilitler; 2^53 makul sınır.
 const _enBuyukId = 9007199254740992;
 const _enBuyukSayac = 1000000000;
+
+// Güncelleyicinin cihaza özel ayarları (update_check, update_record, update_wifi_only):
+// yedeğe yazılmaz, geri yüklemede yedekten alınmaz, cihazdakiler korunur.
+const _cihazaOzelOnek = 'update_';
 
 typedef Satir = Map<String, Object?>;
 
@@ -62,7 +69,10 @@ Future<String> yedekOlustur(AppDatabase db, {int? simdi}) async {
     'transactions': sat(islemler),
     'budgets': sat(limitler),
     'keyword_hits': sat(sozcukler),
-    'settings': sat(ayarlar),
+    'settings': sat([
+      for (final a in ayarlar)
+        if (!a.key.startsWith(_cihazaOzelOnek)) a,
+    ]),
   });
 }
 
@@ -223,7 +233,9 @@ Future<void> yedegiUygula(AppDatabase db, Yedek y, {String? kopyaYolu}) async {
     await db.delete(db.budgets).go();
     await db.delete(db.keywordHits).go();
     await db.delete(db.categories).go();
-    await db.delete(db.settings).go();
+    await (db.delete(
+      db.settings,
+    )..where((s) => s.key.like('update\\_%', escapeChar: '\\').not())).go();
     await db.batch((b) {
       b.insertAll(db.categories, [
         for (final r in y.categories) Category.fromJson(r),
@@ -236,7 +248,9 @@ Future<void> yedegiUygula(AppDatabase db, Yedek y, {String? kopyaYolu}) async {
         for (final r in y.keywordHits) KeywordHit.fromJson(r),
       ]);
       b.insertAll(db.settings, [
-        for (final r in y.settings) Setting.fromJson(r),
+        for (final r in y.settings)
+          if (!(r['key']! as String).startsWith(_cihazaOzelOnek))
+            Setting.fromJson(r),
       ]);
     });
   });

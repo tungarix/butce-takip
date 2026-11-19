@@ -8,6 +8,7 @@ import '../../data/providers.dart';
 import '../../data/yedek.dart';
 import '../../platform/yedek_dosyasi.dart';
 import '../../ui_metin.dart';
+import 'guncelleme_bolumu.dart';
 
 /// JSON yedeği dosyaya kaydeder ([paylas] false) ya da paylaşım sayfasına verir.
 /// Kaydedildiyse/paylaşıldıysa son yedek zamanını yazar; vazgeçilirse yazmaz.
@@ -97,6 +98,8 @@ Future<void> geriYukle(BuildContext context, WidgetRef ref) async {
       sonYedekAnahtari,
       '${DateTime.now().millisecondsSinceEpoch}',
     );
+    // Geri yükleme ayarları değiştirdi; güncelleme bölümü eski değerle kalmasın.
+    ref.invalidate(guncelleyiciProvider);
     soyle(geriYuklendi);
   } on YedekHatasi catch (e) {
     soyle(e.mesaj);

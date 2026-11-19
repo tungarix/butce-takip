@@ -5,7 +5,10 @@ const uyariEsikleri = [80, 100];
 
 /// settings anahtarı: ay + kategori + eşik başına bir kez.
 String uyariAnahtari(int kategoriId, int ay, int esik) =>
-    'alert_${kategoriId}_${ay}_$esik';
+    '${uyariKategoriOnEki(kategoriId)}${ay}_$esik';
+
+/// Bir kategorinin tüm uyarı anahtarlarının ortak başı (ayraç dahil: 1, 11'e karışmaz).
+String uyariKategoriOnEki(int kategoriId) => 'alert_${kategoriId}_';
 
 typedef UyariKarari = ({int esik, List<String> anahtarlar});
 

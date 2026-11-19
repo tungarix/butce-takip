@@ -172,6 +172,16 @@ class _KategoriSatiri extends ConsumerWidget {
         ),
       );
       if (onay == true) await db.kategoriSil(c.id);
+    } on KategoriAdiHatasi {
+      mesaj
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              kategoriSilAdCakismasi(digerKategoriAdi(c.isIncome), c.isIncome),
+            ),
+          ),
+        );
     } catch (_) {
       mesaj
         ..hideCurrentSnackBar()
@@ -224,7 +234,13 @@ class _KategoriDialogState extends ConsumerState<KategoriDialog> {
       if (mounted) Navigator.pop(context);
     } on KategoriAdiHatasi catch (e) {
       if (mounted) {
-        setState(() => _hata = e.neden == AdHatasi.bos ? adBos : adAyni);
+        setState(
+          () => _hata = switch (e.neden) {
+            AdHatasi.bos => adBos,
+            AdHatasi.ayni => adAyni,
+            AdHatasi.ayrilmis => adAyrilmis,
+          },
+        );
       }
     } catch (_) {
       if (mounted) setState(() => _hata = kaydedilemedi);

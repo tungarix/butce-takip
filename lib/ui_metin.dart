@@ -49,6 +49,7 @@ const limitYok = 'Limit yok';
 const limitKaldirEtiket = 'Limiti kaldır';
 const adBos = 'Kategori adı boş olamaz.';
 const adAyni = 'Bu adda bir kategori zaten var.';
+const adAyrilmis = 'Bu ad ayrılmış.';
 String limitSatiri(String tutar) => 'Aylık limit: $tutar';
 String limitBaslik(String ad) => '$ad: aylık limit';
 String simgeSecEtiket(int i) => 'Simge ${i + 1}';
@@ -116,7 +117,13 @@ String kategoriSilBaslik(String ad) => '$ad silinsin mi?';
 String kategoriSilGovde(int islemSayisi, String hedefAd) => islemSayisi == 0
     ? 'Bu geri alınamaz.'
     : "İçindeki $islemSayisi işlem $hedefAd'e taşınacak. Bu geri alınamaz.";
+const geriAlHatasi = 'İşlem geri alınamadı. Tekrar dene.';
 const kategoriSilHatasi = 'Kategori silinemedi. Tekrar dene.';
+String kategoriSilAdCakismasi(String hedefAd, bool gelir) {
+  final diger = gelir ? 'gider' : 'gelir'; // adı kullanan karşı tür
+  return 'Silme hedefi "$hedefAd" adı $diger kategorilerinde kullanılıyor. '
+      "Önce $diger kategorilerindeki $hedefAd'in adını değiştir.";
+}
 
 // Güncellemeler.
 const guncellemeBaslik = 'Güncellemeler';

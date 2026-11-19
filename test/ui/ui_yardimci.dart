@@ -31,6 +31,15 @@ class ArsivBozukDb extends AppDatabase {
       Future.error(StateError('yazılamadı'));
 }
 
+/// Geri al (islemGeriYukle) her seferinde hata veren DB.
+class GeriAlBozukDb extends AppDatabase {
+  GeriAlBozukDb() : super(NativeDatabase.memory());
+
+  @override
+  Future<void> islemGeriYukle(Transaction t) =>
+      Future.error(StateError('yazılamadı'));
+}
+
 // Testin açtığı DB'ler; testin kendisine bağlı, global liste yok.
 final _dbler = Expando<List<AppDatabase>>();
 
@@ -39,12 +48,15 @@ Future<AppDatabase> bellekDb(
   WidgetTester tester, {
   bool bozuk = false,
   bool arsivBozuk = false,
+  bool geriAlBozuk = false,
 }) async {
   await initializeDateFormatting('tr_TR');
   final db = bozuk
       ? BozukDb()
       : arsivBozuk
       ? ArsivBozukDb()
+      : geriAlBozuk
+      ? GeriAlBozukDb()
       : AppDatabase(NativeDatabase.memory());
   (_dbler[tester] ??= []).add(db);
   return db;

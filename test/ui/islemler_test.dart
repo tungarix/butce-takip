@@ -134,6 +134,27 @@ void main() {
     expect(sonra, once);
   });
 
+  uiTest('Geri al başarısız olursa Türkçe hata mesajı görünür', (t) async {
+    telefonBoyutu(t);
+    final db = await bellekDb(t, geriAlBozuk: true);
+    final simdi = DateTime.now();
+    await ekle(
+      t,
+      db,
+      simdi.year * 10000 + simdi.month * 100 + 1,
+      4200,
+      not: 'silinecek',
+    );
+    await islemlerAc(t, db);
+
+    await t.drag(find.text('silinecek'), const Offset(-500, 0));
+    await bekle(t);
+    await t.tap(find.text(geriAlEtiket));
+    await bekle(t);
+
+    expect(find.text(geriAlHatasi), findsOneWidget);
+  });
+
   uiTest('provider hata verirse kısa Türkçe hata metni görünür', (t) async {
     telefonBoyutu(t);
     final db = await bellekDb(t);

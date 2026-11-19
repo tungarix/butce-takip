@@ -16,6 +16,6 @@ void main() {
       find.text('Bütçe Takip ${uygulamaSurumu.split('+').first}'),
       findsOneWidget,
     );
-    expect(find.text('Bütçe Takip 0.1.0'), findsOneWidget);
+    expect(find.text('Bütçe Takip 0.2.0'), findsOneWidget);
   });
 }

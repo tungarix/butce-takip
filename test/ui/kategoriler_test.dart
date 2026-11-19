@@ -36,29 +36,24 @@ void main() {
     await bekle(t);
   }
 
-  uiTest(
-    'gider ve gelir kategorisi eklenir (ad, simge, tür doğru); silme düğmesi yok',
-    (t) async {
-      telefonBoyutu(t);
-      final db = await bellekDb(t);
-      await kategorilerAc(t, db);
+  uiTest('gider ve gelir kategorisi eklenir (ad, simge, tür doğru)', (t) async {
+    telefonBoyutu(t);
+    final db = await bellekDb(t);
+    await kategorilerAc(t, db);
 
-      expect(find.text('Market'), findsOneWidget);
-      expect(find.text('Maaş'), findsOneWidget);
-      expect(find.byIcon(Icons.delete), findsNothing);
-      expect(find.text(silEtiket), findsNothing);
+    expect(find.text('Market'), findsOneWidget);
+    expect(find.text('Maaş'), findsOneWidget);
 
-      await ekleDialogu(t, giderKategorisiEkle, '  Kedi maması ', simge: 12);
-      await ekleDialogu(t, gelirKategorisiEkle, 'Burs', simge: 19);
+    await ekleDialogu(t, giderKategorisiEkle, '  Kedi maması ', simge: 12);
+    await ekleDialogu(t, gelirKategorisiEkle, 'Burs', simge: 19);
 
-      final liste = await kategoriler(t, db);
-      final kedi = liste.singleWhere((c) => c.name == 'Kedi maması');
-      expect((kedi.icon, kedi.isIncome, kedi.archived), (12, false, false));
-      final burs = liste.singleWhere((c) => c.name == 'Burs');
-      expect((burs.icon, burs.isIncome), (19, true));
-      expect(find.text('Kedi maması'), findsOneWidget);
-    },
-  );
+    final liste = await kategoriler(t, db);
+    final kedi = liste.singleWhere((c) => c.name == 'Kedi maması');
+    expect((kedi.icon, kedi.isIncome, kedi.archived), (12, false, false));
+    final burs = liste.singleWhere((c) => c.name == 'Burs');
+    expect((burs.icon, burs.isIncome), (19, true));
+    expect(find.text('Kedi maması'), findsOneWidget);
+  });
 
   uiTest('aynı ad (harf ve boşluk farkıyla) Türkçe hata verir, kayıt olmaz', (
     t,
@@ -270,5 +265,84 @@ void main() {
       (await kategoriler(t, db)).firstWhere((c) => c.id == 1).archived,
       isFalse,
     );
+  });
+
+  group('silme', () {
+    uiTest('sil düğmesi: onay metni işlem sayısıyla, Vazgeç değiştirmez', (
+      t,
+    ) async {
+      telefonBoyutu(t);
+      final db = await bellekDb(t);
+      for (var i = 0; i < 3; i++) {
+        await t.runAsync(
+          () => db.islemEkle(
+            tutarKurus: 100,
+            gelir: false,
+            kategoriId: 1,
+            not: '',
+            gun: gunAnahtari(DateTime.now()),
+          ),
+        );
+      }
+      await kategorilerAc(t, db);
+
+      await t.tap(find.byTooltip('Market: $silEtiket'));
+      await bekle(t);
+      expect(find.text('Market silinsin mi?'), findsOneWidget);
+      expect(
+        find.text("İçindeki 3 işlem Diğer'e taşınacak. Bu geri alınamaz."),
+        findsOneWidget,
+      );
+      await t.tap(find.text(vazgecEtiket));
+      await bekle(t);
+      expect(find.text('Market'), findsOneWidget);
+      expect(await kategoriler(t, db), hasLength(10));
+    });
+
+    uiTest(
+      'Sil: satır kaybolur, işlemler Diğere gider; işlemsizde kısa metin',
+      (t) async {
+        telefonBoyutu(t);
+        final db = await bellekDb(t);
+        await t.runAsync(
+          () => db.islemEkle(
+            tutarKurus: 100,
+            gelir: false,
+            kategoriId: 1,
+            not: '',
+            gun: gunAnahtari(DateTime.now()),
+          ),
+        );
+        await kategorilerAc(t, db);
+
+        await t.tap(find.byTooltip('Market: $silEtiket'));
+        await bekle(t);
+        await t.tap(find.byKey(const ValueKey('sil-onay')));
+        await bekle(t);
+        expect(find.text('Market'), findsNothing);
+        final islemler = await t.runAsync(
+          () => db.select(db.transactions).get(),
+        );
+        expect(islemler!.single.categoryId, 9);
+
+        await t.tap(find.byTooltip('Ulaşım: $silEtiket'));
+        await bekle(t);
+        expect(find.text('Bu geri alınamaz.'), findsOneWidget);
+      },
+    );
+
+    uiTest('Diğer ve Diğer gelir satırında sil düğmesi yok', (t) async {
+      telefonBoyutu(t);
+      final db = await bellekDb(t);
+      await kategorilerAc(t, db);
+      expect(find.byKey(const ValueKey('sil-9')), findsNothing);
+      expect(find.byKey(const ValueKey('sil-1')), findsOneWidget);
+      await t.runAsync(
+        () => db.kategoriEkle(ad: 'Diğer gelir', simge: 9, gelir: true),
+      );
+      await bekle(t);
+      expect(find.text('Diğer gelir'), findsOneWidget);
+      expect(find.byKey(const ValueKey('sil-11')), findsNothing);
+    });
   });
 }

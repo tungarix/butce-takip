@@ -272,6 +272,23 @@ class _HizliGirisState extends ConsumerState<HizliGirisSayfasi> {
                 textAlign: TextAlign.center,
                 style: tema.textTheme.titleMedium,
               ),
+            Center(
+              child: SegmentedButton<bool>(
+                key: const ValueKey('tur'),
+                segments: const [
+                  ButtonSegment(value: false, label: Text(giderEtiket)),
+                  ButtonSegment(value: true, label: Text(gelirEtiket)),
+                ],
+                selected: {_gelir},
+                onSelectionChanged: (s) => setState(() {
+                  _gelir = s.first;
+                  _kategoriId = null;
+                  _oneri = null;
+                  _oneriyiPlanla();
+                }),
+              ),
+            ),
+            const SizedBox(height: 8),
             Semantics(
               label: tutarEtiket,
               value: paraYaz(_kurus),
@@ -330,20 +347,6 @@ class _HizliGirisState extends ConsumerState<HizliGirisSayfasi> {
               shape: const Border(),
               collapsedShape: const Border(),
               children: [
-                SegmentedButton<bool>(
-                  segments: const [
-                    ButtonSegment(value: false, label: Text(giderEtiket)),
-                    ButtonSegment(value: true, label: Text(gelirEtiket)),
-                  ],
-                  selected: {_gelir},
-                  onSelectionChanged: (s) => setState(() {
-                    _gelir = s.first;
-                    _kategoriId = null;
-                    _oneri = null;
-                    _oneriyiPlanla();
-                  }),
-                ),
-                const SizedBox(height: 8),
                 TextField(
                   key: const ValueKey('not'),
                   controller: _not,

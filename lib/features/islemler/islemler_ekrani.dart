@@ -181,9 +181,11 @@ class _Satir extends StatelessWidget {
           title: Text(kategori?.name ?? '?'),
           subtitle: t.note.isEmpty ? null : Text(t.note),
           trailing: Text(
-            t.isIncome ? '+${paraYaz(t.amountKurus)}' : paraYaz(t.amountKurus),
+            t.isIncome
+                ? '+${paraYaz(t.amountKurus)}'
+                : '-${paraYaz(t.amountKurus)}',
             style: tema.textTheme.titleSmall?.copyWith(
-              color: t.isIncome ? yesil : null,
+              color: t.isIncome ? yesil : tema.colorScheme.error,
             ),
           ),
           onTap: () => hizliGirisAc(context, duzenle: t),

@@ -36,7 +36,7 @@ void main() {
       t.runAsync(() => db.select(db.transactions).get()).then((l) => l!.length);
 
   uiTest(
-    'güne göre gruplama: Türkçe gün başlığı, gider toplamı, gelir yeşil +',
+    'güne göre gruplama: Türkçe gün başlığı, gider toplamı, gider kırmızı -, gelir yeşil +',
     (t) async {
       telefonBoyutu(t);
       final db = await bellekDb(t);
@@ -53,11 +53,11 @@ void main() {
         findsOneWidget,
         reason: '2. günün gider toplamı (gelir hariç)',
       );
-      expect(
-        find.text('7,00 ₺'),
-        findsNWidgets(2),
-        reason: 'başlık toplamı + satır tutarı',
-      );
+      expect(find.text('7,00 ₺'), findsOneWidget, reason: 'başlık toplamı');
+      final gider = find.text('-7,00 ₺');
+      expect(gider, findsOneWidget, reason: 'gider satırı eksili');
+      final tema = Theme.of(t.element(gider));
+      expect(t.widget<Text>(gider).style?.color, tema.colorScheme.error);
       expect(find.text('+5.000,00 ₺'), findsOneWidget);
       expect(find.text('migros'), findsOneWidget);
       for (final g in [1, 2]) {

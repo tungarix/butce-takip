@@ -24,9 +24,16 @@ class KategoriAdiHatasi implements Exception {
   final AdHatasi neden;
 }
 
+/// Kategori silinince işlemlerin taşındığı kategori; kendisi silinemez.
+String digerKategoriAdi(bool gelir) => gelir ? 'Diğer gelir' : 'Diğer';
+
 // Türkçe İ/I elle çevrilir; Dart toLowerCase yerel ayar almaz.
 String _adAnahtari(String ad) =>
     ad.trim().replaceAll('İ', 'i').replaceAll('I', 'ı').toLowerCase();
+
+/// Silme hedefi olan 'Diğer' / 'Diğer gelir' kategorisi mi (silinemez).
+bool digerMi(Category c) =>
+    _adAnahtari(c.name) == _adAnahtari(digerKategoriAdi(c.isIncome));
 
 @DriftDatabase(
   tables: [Categories, Transactions, Budgets, KeywordHits, Settings],
@@ -144,7 +151,7 @@ class AppDatabase extends _$AppDatabase {
   /// Silinen kaydı aynı id ve createdAt ile geri koyar ("Geri al").
   Future<void> islemGeriYukle(Transaction t) => into(transactions).insert(t);
 
-  // Kategori yönetimi. Silme yok: yalnız arşivlenir, eski işlemlerde adı görünmeye devam eder.
+  // Kategori yönetimi: arşivlenir ya da silinir (silince işlemleri 'Diğer'e taşınır).
 
   /// Adı doğrular; [haricId] yeniden adlandırılan kategorinin kendisidir.
   Future<String> _adiDogrula(String ad, {int? haricId}) async {
@@ -193,6 +200,50 @@ class AppDatabase extends _$AppDatabase {
       (update(categories)..where((c) => c.id.equals(id))).write(
         CategoriesCompanion(archived: Value(arsivli)),
       );
+
+  Future<int> kategoriIslemSayisi(int id) async {
+    final sayi = transactions.id.count();
+    final r =
+        await (selectOnly(transactions)
+              ..addColumns([sayi])
+              ..where(transactions.categoryId.equals(id)))
+            .getSingle();
+    return r.read(sayi) ?? 0;
+  }
+
+  /// Kategorinin işlemlerini türüne göre 'Diğer' / 'Diğer gelir'e taşır (yoksa oluşturur,
+  /// arşivliyse arşivden çıkarır), limitini ve anahtar kelimelerini siler, kategoriyi siler.
+  /// Hedef kategorinin kendisi silinemez (StateError). Hepsi tek transaction.
+  Future<void> kategoriSil(int id) => transaction(() async {
+    final hepsi = await select(categories).get();
+    final c = hepsi.singleWhere((x) => x.id == id);
+    final hedefAd = digerKategoriAdi(c.isIncome);
+    final anahtar = _adAnahtari(hedefAd);
+    if (digerMi(c)) throw StateError('$hedefAd silinemez');
+    final bulunan = hepsi
+        .where(
+          (x) => x.isIncome == c.isIncome && _adAnahtari(x.name) == anahtar,
+        )
+        .firstOrNull;
+    final int hedefId;
+    if (bulunan == null) {
+      // Diğer: tohumdaki simge (8); Diğer gelir: Maaş simgesi (9).
+      hedefId = await kategoriEkle(
+        ad: hedefAd,
+        simge: c.isIncome ? 9 : 8,
+        gelir: c.isIncome,
+      );
+    } else {
+      hedefId = bulunan.id;
+      if (bulunan.archived) await kategoriArsivle(hedefId, arsivli: false);
+    }
+    await (update(transactions)..where((t) => t.categoryId.equals(id))).write(
+      TransactionsCompanion(categoryId: Value(hedefId)),
+    );
+    await (delete(budgets)..where((b) => b.categoryId.equals(id))).go();
+    await (delete(keywordHits)..where((k) => k.categoryId.equals(id))).go();
+    await (delete(categories)..where((x) => x.id.equals(id))).go();
+  });
 
   // Limitler.
 

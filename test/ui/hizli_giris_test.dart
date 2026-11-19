@@ -92,8 +92,8 @@ void main() {
       await uygulamaAc(t, db);
       await t.tap(find.byTooltip(islemEkleEtiket));
       await bekle(t);
-      await t.tap(find.text(ayrintiEtiket));
-      await bekle(t);
+      // Gider/Gelir anahtarı Ayrıntı açılmadan görünür.
+      expect(find.byKey(const ValueKey('not')), findsNothing);
       await t.tap(find.text(gelirEtiket));
       await bekle(t);
       expect(find.byKey(const ValueKey('cip-1')), findsNothing);

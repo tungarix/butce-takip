@@ -10,8 +10,8 @@ import '../alt_bosluk.dart';
 import '../ikonlar.dart';
 import '../tus_takimi.dart';
 
-/// Kategori silinmez, yalnız arşivlenir; arşivli kategori yeni girişte görünmez,
-/// eski işlemlerde adı görünür.
+/// Kategori arşivlenir (yeni girişte görünmez, eski işlemlerde adı görünür) ya da silinir
+/// (işlemleri 'Diğer'e taşınır).
 class KategorilerEkrani extends ConsumerWidget {
   const KategorilerEkrani({super.key});
 
@@ -129,9 +129,51 @@ class _KategoriSatiri extends ConsumerWidget {
               }
             },
           ),
+          if (!digerMi(c))
+            IconButton(
+              key: ValueKey('sil-${c.id}'),
+              tooltip: '${c.name}: $silEtiket',
+              icon: const Icon(Icons.delete_outline),
+              onPressed: () => _sil(context, ref),
+            ),
         ],
       ),
     );
+  }
+
+  Future<void> _sil(BuildContext context, WidgetRef ref) async {
+    final db = ref.read(databaseProvider);
+    final mesaj = ScaffoldMessenger.of(context);
+    try {
+      final sayi = await db.kategoriIslemSayisi(c.id);
+      if (!context.mounted) return;
+      final onay = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(kategoriSilBaslik(c.name)),
+          content: Text(kategoriSilGovde(sayi, digerKategoriAdi(c.isIncome))),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text(vazgecEtiket),
+            ),
+            TextButton(
+              key: const ValueKey('sil-onay'),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(ctx).colorScheme.error,
+              ),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text(silEtiket),
+            ),
+          ],
+        ),
+      );
+      if (onay == true) await db.kategoriSil(c.id);
+    } catch (_) {
+      mesaj
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(content: Text(kategoriSilHatasi)));
+    }
   }
 }
 

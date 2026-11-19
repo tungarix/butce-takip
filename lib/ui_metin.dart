@@ -110,3 +110,10 @@ String yedekOzeti(int islem, int kategori, String tarih) =>
 const geriYuklendi = 'Yedek geri yüklendi.';
 const geriYuklemeBasarisiz =
     'Geri yükleme yapılamadı, mevcut verilerin değişmedi.';
+
+// Kategori silme.
+String kategoriSilBaslik(String ad) => '$ad silinsin mi?';
+String kategoriSilGovde(int islemSayisi, String hedefAd) => islemSayisi == 0
+    ? 'Bu geri alınamaz.'
+    : "İçindeki $islemSayisi işlem $hedefAd'e taşınacak. Bu geri alınamaz.";
+const kategoriSilHatasi = 'Kategori silinemedi. Tekrar dene.';

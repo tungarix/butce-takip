@@ -46,6 +46,32 @@ void main() {
     expect(find.byKey(const ValueKey('not')), findsOneWidget);
   });
 
+  uiTest(
+    'hızlı giriş: Gider/Gelir anahtarı tutarın üstünde; çipler ulaşılabilir',
+    (t) async {
+      kucukEkranCubuklu(t);
+      final db = await bellekDb(t);
+      await uygulamaAc(t, db);
+      await t.tap(find.byTooltip(islemEkleEtiket));
+      await bekle(t);
+
+      expect(
+        t.getRect(find.byKey(const ValueKey('tur'))).bottom,
+        lessThanOrEqualTo(t.getRect(find.byKey(const ValueKey('tutar'))).top),
+      );
+      await sonaKaydir(t, find.byType(SingleChildScrollView).last);
+      gorunur(t, find.byKey(const ValueKey('ayrinti')));
+      await t.drag(
+        find.byType(SingleChildScrollView).last,
+        const Offset(0, 2000),
+      );
+      await bekle(t);
+      expect(find.byKey(const ValueKey('cip-1')), findsOneWidget);
+      await t.ensureVisible(find.byKey(const ValueKey('cip-1')));
+      expect(find.byKey(const ValueKey('tur')), findsOneWidget);
+    },
+  );
+
   uiTest('limit sayfası: Kaydet çubuğun üstünde ve çalışır', (t) async {
     kucukEkranCubuklu(t);
     final db = await bellekDb(t);

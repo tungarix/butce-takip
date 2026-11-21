@@ -28,6 +28,8 @@ class SifirlaSayfasi extends ConsumerStatefulWidget {
 
 class _SifirlaSayfasiState extends ConsumerState<SifirlaSayfasi> {
   bool _hepsi = false;
+  // Sürerken ikinci sıfırlama başlamasın (kopyanın üstüne boş veri yazardı).
+  bool _calisiyor = false;
 
   Future<void> _sifirla() async {
     final mesaj = ScaffoldMessenger.of(context);
@@ -67,7 +69,8 @@ class _SifirlaSayfasiState extends ConsumerState<SifirlaSayfasi> {
         ],
       ),
     );
-    if (onay != true) return;
+    if (onay != true || _calisiyor) return;
+    setState(() => _calisiyor = true);
     try {
       final yol = await dosya.kopyaYolu();
       if (yol == null) throw const SifirlamaKopyasiHatasi();
@@ -79,9 +82,11 @@ class _SifirlaSayfasiState extends ConsumerState<SifirlaSayfasi> {
           ? db.herSeyiSifirla(kopyaYolu: kopya)
           : db.islemleriSifirla(kopyaYolu: kopya));
     } on SifirlamaKopyasiHatasi {
+      if (mounted) setState(() => _calisiyor = false);
       soyle(sifirlamaKopyasiHatasi);
       return;
     } catch (_) {
+      if (mounted) setState(() => _calisiyor = false);
       soyle(sifirlamaBasarisiz);
       return;
     }
@@ -156,7 +161,7 @@ class _SifirlaSayfasiState extends ConsumerState<SifirlaSayfasi> {
                 backgroundColor: Theme.of(context).colorScheme.error,
                 foregroundColor: Theme.of(context).colorScheme.onError,
               ),
-              onPressed: _sifirla,
+              onPressed: _calisiyor ? null : _sifirla,
               child: const Text(sifirlaEtiket),
             ),
           ),

@@ -217,8 +217,10 @@ const sifirlaYedekOnerisi = 'Önce yedek almanı öneririz.';
 const sifirlaYedekDugmesi = 'Yedeği dosyaya kaydet';
 const sifirlaEtiket = 'Sıfırla';
 String sifirlaOnayMetni(int islem, bool hepsi) =>
-    '$islem işlem silinecek. Bu geri alınamaz.'
-    '${hepsi ? ' Kategorilerin, limitlerin ve öğrenilen öneriler de silinir.' : ''}';
+    '$islem işlem ve başlangıç bakiyesi silinecek. Bu geri alınamaz.'
+    '${hepsi ? ' Kategorilerin, limitlerin, öğrenilen öneriler ve bildirim tercihin de sıfırlanır.'
+        ' Uygulama son sıfırlamadan önceki verilerin bir kopyasını telefonda saklar;'
+        ' hepsini kalıcı olarak silmek için uygulamayı kaldır.' : ''}';
 const sifirlandi = 'Veriler sıfırlandı';
 const sifirlamaKopyasiHatasi =
     'Mevcut verilerin kopyası alınamadı, sıfırlama yapılmadı.';

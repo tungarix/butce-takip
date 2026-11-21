@@ -6,8 +6,10 @@ import 'data/providers.dart';
 import 'features/ayarlar/ayarlar_ekrani.dart';
 import 'features/ayarlar/guncelleme_bolumu.dart';
 import 'features/hizli_giris/hizli_giris.dart';
+import 'features/ice_aktar/onizleme_ekrani.dart';
 import 'features/islemler/islemler_ekrani.dart';
 import 'features/ozet/ozet_ekrani.dart';
+import 'platform/kopru.dart';
 import 'ui_metin.dart';
 
 ThemeData _tema(Brightness b) => ThemeData(
@@ -45,6 +47,9 @@ class _KabukState extends ConsumerState<Kabuk> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // "Paylaş" ile gelen döküm: açılışta bekleyen var mı, açıkken yenisi gelirse haber alınır.
+    ref.read(kopruProvider)?.paylasimDinle(_paylasimiAc);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _paylasimiAc());
     // İlk kare çizilince: denetim hiç sorulmadıysa bir kez sor, açıksa günlük denetimi çalıştır.
     // Köprüsüz ortamda (testler) hiçbir şey yapmaz.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -54,6 +59,10 @@ class _KabukState extends ConsumerState<Kabuk> with WidgetsBindingObserver {
         // Güncelleme isteğe bağlı; uygulamayı asla engellemez.
       }
     });
+  }
+
+  void _paylasimiAc() {
+    if (mounted) paylasilaniAc(context, ref.read(kopruProvider));
   }
 
   @override

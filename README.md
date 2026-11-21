@@ -14,6 +14,7 @@ Android için hesapsız, yerel gelir-gider takibi. Arayüz Türkçe, para birimi
 - 10 hazır kategori; yenisi eklenir, yeniden adlandırılır, arşivlenir ya da silinir (silince işlemleri Diğer / Diğer gelir'e taşınır).
 - Kategori başına aylık limit ve ilerleme çubuğu.
 - Toplam bakiye: tüm gelir eksi tüm gider, başlangıç bakiyesiyle; karta dokunup bankadaki bakiyeye eşitlenir (işlem eklenmez).
+- Hesap dökümü içe aktarma (Yapı Kredi PDF): Ayarlar'dan ya da Android "Paylaş" ile; önizlemede kategori seçilir, zaten kayıtlı ve kendi hesaplar arası satırlar işaretsiz gelir.
 - Özet: bu ay harcanan, kalan ve ay sonu tahmini.
 - Cihaz içinde, kural tabanlı öneriler: nottan kategori önerisi, tekrarlayan gider önerisi, bütçe aşım bildirimi (limitin %80 ve %100'ünde).
 - JSON yedek: dosyaya kaydet ya da paylaş, geri yükle.

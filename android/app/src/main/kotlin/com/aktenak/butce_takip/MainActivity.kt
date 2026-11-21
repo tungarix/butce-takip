@@ -6,11 +6,13 @@ import android.content.pm.PackageInstaller
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.provider.Settings
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
+import java.io.IOException
 
 /**
  * Dart köprüsü (ek paket yok): yalnız uygulama içi güncelleme.
@@ -20,9 +22,64 @@ import java.io.File
  *    daha yüksek versionCode'lu APK kabul edilir; son söz Android'in imza denetimidir (başka anahtarla
  *    imzalı APK bunun üstüne kurulamaz).
  *  - kurulumSonucu (Kotlin -> Dart): oturum sonucu.
+ * Paylaş hedefi (yalnız application/pdf, ACTION_SEND, content://):
+ *  - paylasilanDosya: bekleyen paylaşımın geçici dosya yolunu bir kez döndürür ve temizler; paylaşım 5 MB'ı
+ *    aştıysa bir kez 'buyuk' hatası verir.
+ *  - paylasimGeldi (Kotlin -> Dart): uygulama açıkken yeni paylaşım geldi.
  */
 class MainActivity : FlutterActivity() {
     private var kanal: MethodChannel? = null
+
+    // Paylaşımdan gelip Dart'ın henüz almadığı dosya (yol) ya da boyut hatası.
+    private var bekleyenYol: String? = null
+    private var bekleyenBuyuk = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        paylasimiAl(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (paylasimiAl(intent)) kanal?.invokeMethod("paylasimGeldi", null)
+    }
+
+    /** Paylaşılan PDF'i en çok 5 MB okuyup cacheDir'e yazar; paylaşım niyeti ise true. Kalıcı URI izni alınmaz. */
+    private fun paylasimiAl(niyet: Intent?): Boolean {
+        if (niyet?.action != Intent.ACTION_SEND || niyet.type != "application/pdf") return false
+        @Suppress("DEPRECATION")
+        val uri: Uri? = if (Build.VERSION.SDK_INT >= 33) niyet.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
+        else niyet.getParcelableExtra(Intent.EXTRA_STREAM)
+        if (uri == null || uri.scheme != "content") return false
+        val gecici = File(cacheDir, "paylasilan.tmp")
+        try {
+            val girdi = contentResolver.openInputStream(uri) ?: return false
+            girdi.use { g ->
+                gecici.outputStream().use { c ->
+                    val tampon = ByteArray(8192)
+                    var toplam = 0L
+                    while (true) {
+                        val n = g.read(tampon)
+                        if (n < 0) break
+                        toplam += n
+                        if (toplam > ENBUYUK_PAYLASIM) throw IOException("buyuk")
+                        c.write(tampon, 0, n)
+                    }
+                }
+            }
+            val hedef = File(cacheDir, "paylasilan.pdf")
+            gecici.copyTo(hedef, overwrite = true)
+            gecici.delete()
+            bekleyenYol = hedef.path
+            bekleyenBuyuk = false
+        } catch (e: Exception) {
+            gecici.delete()
+            bekleyenYol = null
+            bekleyenBuyuk = e.message == "buyuk"
+            if (!bekleyenBuyuk) return false
+        }
+        return true
+    }
 
     // Yalnız KENDİ dinleyicimizi kaldır: ikinci bir MainActivity örneği onu değiştirmiş olabilir.
     private var benimDinleyici: ((Int, String?) -> Unit)? = null
@@ -43,6 +100,13 @@ class MainActivity : FlutterActivity() {
             k.setMethodCallHandler { cagri, sonuc ->
                 when (cagri.method) {
                     "agTuru" -> sonuc.success(agTuru())
+                    "paylasilanDosya" -> {
+                        val yol = bekleyenYol
+                        val buyuk = bekleyenBuyuk
+                        bekleyenYol = null
+                        bekleyenBuyuk = false
+                        if (buyuk) sonuc.error("buyuk", "Dosya 5 MB'tan büyük", null) else sonuc.success(yol)
+                    }
                     "kurulumIzniVar" -> sonuc.success(Build.VERSION.SDK_INT < 26 || packageManager.canRequestPackageInstalls())
                     "kurulumIzniAc" -> {
                         startActivity(
@@ -112,5 +176,9 @@ class MainActivity : FlutterActivity() {
             if (oturumNo >= 0 && !commitEdildi) try { packageManager.packageInstaller.abandonSession(oturumNo) } catch (_: Exception) {}
             runOnUiThread { sonuc.error("kurulum", e.message ?: e.javaClass.simpleName, null) }
         }
+    }
+
+    private companion object {
+        const val ENBUYUK_PAYLASIM = 5L * 1024 * 1024
     }
 }

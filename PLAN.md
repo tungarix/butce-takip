@@ -154,7 +154,7 @@ Arda istedi: bankadan bakiye çekme mümkün değil (lisans gerekir, banka şifr
   bakiyesine yazar, işlem eklemez, aylık özetler değişmez.
 - Saf hesap `core/butce.dart`'ta, testli (eksi bakiye, üst sınır, boş veri).
 
-## B. Döküm okuyucu (saf Dart, örnek dosya şart)
+## B. Döküm okuyucu (saf Dart, örnek dosya şart) (Yapı Kredi PDF için yapıldı; Ziraat bekliyor)
 - `lib/ice_aktar/`: dosya baytı → satırlar `(gün, açıklama, tutarKuruş, gelirMi, bakiye?)`.
 - Banka biçimi başlık satırından tanınır; her banka küçük bir eşleme (sütun adları, tarih biçimi,
   `1.234,56` / `-1.234,56`, borç/alacak ayrı sütun mu).
@@ -163,7 +163,7 @@ Arda istedi: bankadan bakiye çekme mümkün değil (lisans gerekir, banka şifr
 - Testler Arda'nın gönderdiği, tutar ve adları değiştirilmiş örnek dosyalarla (`test/ornekler/`).
 - Tanınmayan dosya: "Bu dosya biçimi tanınmadı", veri değişmez.
 
-## C. Önizleme ve kaydetme
+## C. Önizleme ve kaydetme (Yapı Kredi PDF için yapıldı; Ziraat bekliyor)
 - Ayarlar → "Hesap dökümü içe aktar" → dosya seç → önizleme listesi: her satırda kategori önerisi
   (mevcut `kategori_onerici`; öneri yoksa Diğer / Diğer gelir), dokununca kategori değişir, işaret
   kutusuyla dışarıda bırakılır.

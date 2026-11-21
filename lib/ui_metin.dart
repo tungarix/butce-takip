@@ -179,3 +179,20 @@ String guncellemeHata(String kod) => switch (kod) {
   'ag_hatasi' || 'limit' => 'İndirme tamamlanamadı, sonra tekrar dene.',
   _ => 'Güncelleme yapılamadı ($kod).',
 };
+
+// Hesap dökümü içe aktarma.
+const dokumAktarBaslik = 'Hesap dökümü içe aktar';
+const dokumAktarAltyazi = 'Bankadan indirdiğin PDF dökümünü işlem olarak ekle';
+const dokumOkunamadi = 'Bu dosya okunamadı';
+const dokumUyari =
+    'Bazı satırlar okunamadı ya da bakiyeler tutmuyor. Eklemeden önce listeyi kontrol et.';
+String dokumBaslik(String banka, int satir) => '$banka: $satir işlem';
+const dokumZatenVar = 'zaten var';
+const dokumKendiHesap = 'kendi hesabın';
+String dokumEkleEtiket(int n) => '$n işlemi ekle';
+String dokumEklendi(int n) => '$n işlem eklendi';
+String dokumBakiyeSorusu(String tutar) =>
+    'Bankaya göre bakiyen $tutar. Toplam bakiyeyi buna eşitle?';
+const dokumBakiyeEvet = 'Eşitle';
+const dokumBakiyeHayir = 'Hayır';
+const dokumKategoriSec = 'Kategori seç';

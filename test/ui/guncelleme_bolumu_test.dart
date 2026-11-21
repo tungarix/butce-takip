@@ -34,6 +34,12 @@ class _Kopru implements Kopru {
   Future<void> apkKur(String yol, String ozet) async {}
   @override
   void kurulumSonucuDinle(void Function(int, String?) f) {}
+
+  @override
+  Future<String?> paylasilanDosya() async => null;
+
+  @override
+  void paylasimDinle(void Function() f) {}
 }
 
 void main() {

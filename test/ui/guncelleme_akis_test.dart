@@ -97,6 +97,12 @@ class _SahteKopru implements Kopru {
       kurulan.add((yol, ozet));
   @override
   void kurulumSonucuDinle(void Function(int, String?) f) => sonuc = f;
+
+  @override
+  Future<String?> paylasilanDosya() async => null;
+
+  @override
+  void paylasimDinle(void Function() f) {}
 }
 
 Future<String?> _kos(

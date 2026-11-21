@@ -4,6 +4,7 @@ import '../../akilli/normalize.dart';
 import '../../akilli/tekrar_tespit.dart';
 import '../../akilli/uyari.dart';
 import '../../core/tarih.dart';
+import '../../ice_aktar/dokum.dart';
 import 'tables.dart';
 import 'tohum.dart';
 
@@ -19,6 +20,15 @@ const yedekErtelemeAnahtari =
 
 const acilisBakiyeAnahtari =
     'acilis_bakiye'; // kuruş, işaretli int metni; yoksa 0
+
+/// İçe aktarılacak, kategorisi seçilmiş döküm satırı.
+typedef IceAktarSatiri = ({
+  int gun,
+  String not,
+  int tutarKurus,
+  bool gelir,
+  int kategoriId,
+});
 
 enum AdHatasi { bos, ayni, ayrilmis }
 
@@ -121,6 +131,57 @@ class AppDatabase extends _$AppDatabase {
     );
     await _sozcukleriSay(not, kategoriId);
     return id;
+  });
+
+  /// Her döküm satırı için: veritabanında aynı gün + tutar + tür + normalize not olan işlem var mı.
+  /// Eşleşmeler sayılarak yapılır: veritabanında n eşleşme varsa aynı anahtarlı ilk n satır "var"
+  /// sayılır, fazlası yeni (aynı dosyada birebir aynı iki satır ayrı iki işlemdir).
+  Future<List<bool>> zatenVar(List<DokumSatiri> satirlar) async {
+    if (satirlar.isEmpty) return [];
+    String anahtar(int gun, int tutar, bool gelir, String norm) =>
+        '$gun|$tutar|$gelir|$norm';
+    final gunler = satirlar.map((s) => s.gun);
+    final mevcut = <String, int>{};
+    for (final t
+        in await (select(transactions)..where(
+              (t) => t.day.isBetweenValues(
+                gunler.reduce((a, b) => a < b ? a : b),
+                gunler.reduce((a, b) => a > b ? a : b),
+              ),
+            ))
+            .get()) {
+      final k = anahtar(t.day, t.amountKurus, t.isIncome, t.noteNorm);
+      mevcut[k] = (mevcut[k] ?? 0) + 1;
+    }
+    return [
+      for (final s in satirlar)
+        () {
+          final k = anahtar(
+            s.gun,
+            s.tutarKurus,
+            s.gelir,
+            notNormalize(s.aciklama),
+          );
+          final kalan = mevcut[k] ?? 0;
+          if (kalan > 0) mevcut[k] = kalan - 1;
+          return kalan > 0;
+        }(),
+    ];
+  }
+
+  /// Döküm satırlarını tek transaction'da işlem olarak yazar (anahtar kelime öğrenimi [islemEkle] ile
+  /// aynı). Biri başarısız olursa hiçbiri yazılmaz. Eklenen sayıyı döndürür.
+  Future<int> iceAktar(List<IceAktarSatiri> satirlar) => transaction(() async {
+    for (final s in satirlar) {
+      await islemEkle(
+        tutarKurus: s.tutarKurus,
+        gelir: s.gelir,
+        kategoriId: s.kategoriId,
+        not: s.not,
+        gun: s.gun,
+      );
+    }
+    return satirlar.length;
   });
 
   /// id ve createdAt korunur. Kategori değiştiyse yeni kategoriye +1 (eskisinden düşülmez).

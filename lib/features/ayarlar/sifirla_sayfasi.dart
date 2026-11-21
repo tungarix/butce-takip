@@ -34,6 +34,7 @@ class _SifirlaSayfasiState extends ConsumerState<SifirlaSayfasi> {
     final nav = Navigator.of(context);
     final db = ref.read(databaseProvider);
     final dosya = ref.read(yedekDosyasiProvider);
+    final kap = ProviderScope.containerOf(context, listen: false);
     void soyle(String m) => mesaj.showSnackBar(SnackBar(content: Text(m)));
 
     final int sayi;
@@ -77,15 +78,20 @@ class _SifirlaSayfasiState extends ConsumerState<SifirlaSayfasi> {
       await (_hepsi
           ? db.herSeyiSifirla(kopyaYolu: kopya)
           : db.islemleriSifirla(kopyaYolu: kopya));
-      // Güncelleyici ayarları korunur ama elle tutulan durum yine de tazelensin.
-      ref.invalidate(guncelleyiciProvider);
-      if (nav.mounted) nav.pop();
-      soyle(sifirlandi);
     } on SifirlamaKopyasiHatasi {
       soyle(sifirlamaKopyasiHatasi);
+      return;
     } catch (_) {
       soyle(sifirlamaBasarisiz);
+      return;
     }
+    // Silme bitti: bundan sonrası başarısız olsa da kullanıcıya "değişmedi" denmez. Sayfa bu arada
+    // kapatıldıysa başka bir rota kapatılmasın; container sayfadan bağımsız tazelenir.
+    soyle(sifirlandi);
+    try {
+      kap.invalidate(guncelleyiciProvider);
+    } catch (_) {}
+    if (mounted) nav.pop();
   }
 
   @override

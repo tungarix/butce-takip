@@ -22,10 +22,17 @@ Future<List<MetinParcasi>> ocrParcalari(Uint8List pdf) async {
   final dizin = await getTemporaryDirectory();
   final parcalar = <MetinParcasi>[];
   try {
+    if (belge.pages.length > _enCokSayfa) {
+      throw DokumHatasi('Döküm çok uzun (en çok $_enCokSayfa sayfa). Bankada daha kısa bir tarih aralığı seç.');
+    }
     var kayma = 0.0;
-    for (var s = 0; s < belge.pages.length && s < _enCokSayfa; s++) {
+    for (var s = 0; s < belge.pages.length; s++) {
       final sayfa = belge.pages[s];
       final h = (sayfa.height * _hedefGenislik / sayfa.width).roundToDouble();
+      // Uç en-boy oranlı (hazırlanmış) sayfa devasa bir resim istemesin: A4'ün ~2 katıyla sınırlı.
+      if (!(h > 0 && h <= _hedefGenislik * 3)) {
+        throw const DokumHatasi('Bu dosya okunamadı');
+      }
       final resim = await sayfa.render(
         fullWidth: _hedefGenislik,
         fullHeight: h,

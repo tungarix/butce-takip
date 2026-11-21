@@ -7,15 +7,19 @@ import 'package:pdfrx/pdfrx.dart';
 import 'birlestir.dart';
 import 'dokum.dart';
 
-const int _enCokSayfa = 10;
+const int _enCokSayfa = 30;
 
 /// Sayfalar alt alta dizilir (sayfa başına 10000 birim kayma); y sol-üst kökenlidir.
 Future<List<MetinParcasi>> pdfParcalari(Uint8List bayt) async {
   await pdfrxFlutterInitialize();
   final belge = await PdfDocument.openData(bayt);
   try {
+    // Sessizce kesmek eksik içe aktarma olurdu: sınırı aşan döküm reddedilir.
+    if (belge.pages.length > _enCokSayfa) {
+      throw DokumHatasi('Döküm çok uzun (en çok $_enCokSayfa sayfa). Bankada daha kısa bir tarih aralığı seç.');
+    }
     final karakterler = <MetinParcasi>[];
-    for (var s = 0; s < belge.pages.length && s < _enCokSayfa; s++) {
+    for (var s = 0; s < belge.pages.length; s++) {
       final sayfa = belge.pages[s];
       final metin = await sayfa.loadText();
       if (metin == null) continue;

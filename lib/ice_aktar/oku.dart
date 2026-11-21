@@ -20,6 +20,8 @@ Future<Dokum> dokumOku(Uint8List bayt) async {
   final List<MetinParcasi> parcalar;
   try {
     parcalar = await pdfParcalari(bayt);
+  } on DokumHatasi {
+    rethrow;
   } catch (_) {
     throw okunamadi;
   }
@@ -30,6 +32,8 @@ Future<Dokum> dokumOku(Uint8List bayt) async {
     try {
       final ocrDokum = ziraatOku(await ocrParcalari(bayt));
       if (ocrDokum != null) return ocrDokum;
+    } on DokumHatasi {
+      rethrow;
     } catch (_) {
       throw okunamadi;
     }

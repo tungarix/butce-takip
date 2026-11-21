@@ -2,11 +2,11 @@
 
 Android için hesapsız, yerel gelir-gider takibi. Arayüz Türkçe, para birimi TL.
 
-**Hesap yok, veri yalnız telefonunda.** Yalnız güncelleme denetimi için, ve yalnız sen açarsan GitHub'a bağlanır; verilerin telefondan çıkmaz.
+**Hesap yok, veri yalnız telefonunda.** Güncelleme denetimi için, ve yalnız sen açarsan GitHub'a bağlanır; verilerin telefondan çıkmaz. Tek istisna aşağıdaki Ziraat notu: döküm içeriği yine gönderilmez, ama Google ML Kit kendi kullanım ölçümünü gönderebilir.
 
 Not (Ziraat dökümü): Ziraat PDF'i resimdir, bu yüzden telefonda Google ML Kit ile okunur (model uygulamanın içinde, dökümün içeriği telefondan çıkmaz). Google'ın veri açıklamasına göre ML Kit, tanıma sırasında cihaz/uygulama bilgisi, gecikme gibi performans ölçümleri ve hata kodlarını Google'a gönderebilir (HTTPS); açıklamada resim içeriği yer almaz, kapatma yolu belirtilmemiştir (kaynak: developers.google.com/ml-kit/android-data-disclosure). Yapı Kredi dökümünde ML Kit hiç çalışmaz.
 
-> Durum: ilk sürüm (v0.1.0) hazırlanıyor, henüz yayımlanmadı. Plan ve kararlar: [PLAN.md](PLAN.md).
+> Plan ve kararlar: [PLAN.md](PLAN.md). Güvenlik incelemeleri: [guvenlik/incelemeler](guvenlik/incelemeler).
 
 ![Bütçe Takip](docs/ekran-goruntusu.png)
 

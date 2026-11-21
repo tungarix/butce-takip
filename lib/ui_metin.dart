@@ -138,7 +138,7 @@ String kategoriSilAdCakismasi(String hedefAd, bool gelir) {
 const guncellemeBaslik = 'Güncellemeler';
 const guncellemeDenetle = 'Güncellemeleri denetle';
 const guncellemeDenetleAciklama =
-    "Günde en çok bir kez GitHub'a sorar. Kapalıyken internet kullanılmaz.";
+    "Günde en çok bir kez GitHub'a sorar. Kapalıyken güncelleme için internet kullanılmaz.";
 const guncellemeYalnizWifi = "Yalnız Wi-Fi'da indir";
 const guncellemeSimdiDenetle = 'Şimdi denetle';
 const guncellemeDenetleniyor = 'Denetleniyor...';

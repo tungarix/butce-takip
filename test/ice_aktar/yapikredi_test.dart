@@ -98,30 +98,32 @@ void main() {
     expect(yapiKrediOku(p)!.tutarsiz, isTrue);
   });
 
-  test('parcalariBirlestir: bitişik harfler, sözcük arası ve sütun boşluğu', () {
-    MetinParcasi k(double x, String t, {double y = 10}) =>
-        MetinParcasi(x, y, 5, 10, t);
+  test('parcalariBirlestir: boşluk karakteri sözcük arası, büyük x boşluğu ve satır sonu keser', () {
+    MetinParcasi k(double x, String t, {double y = 10}) => MetinParcasi(x, y, 5, 10, t);
     final r = parcalariBirlestir([
-      k(105, 'B'), k(100, 'A'), // karışık sıra, bitişik
-      k(113, 'C'), // 2 birim boşluk: sözcük arası
-      k(200, 'X'), // büyük boşluk: ayrı parça
-      k(100, 'Y', y: 30), // başka satır
+      k(100, 'A'), k(105, 'B'), k(110, ' '), k(113, 'C'),
+      k(200, 'X'), // 1,5 x 10'dan büyük boşluk: ayrı parça
+      k(100, 'Y', y: 30), k(105, '\r'), k(105, '\n'), k(105, 'Z', y: 30), // satır sonu keser
     ]);
-    expect(r.map((e) => e.t).toList(), ['AB C', 'X', 'Y']);
+    expect(r.map((e) => e.t).toList(), ['AB C', 'X', 'Y', 'Z']);
     expect(r.first.x, 100);
   });
 
-  test('parcalariBirlestir: sıkı glif kutuları (farklı üst y ve yükseklik) tek satır', () {
-    // Rakamlar 10 yüksek; ',' ve '.' alçakta, kısa durur.
-    MetinParcasi k(double x, String t, {double y = 100, double h = 10, double w = 5}) =>
-        MetinParcasi(x, y, w, h, t);
-    final r = parcalariBirlestir([
-      k(0, '1'), k(5, '.', y: 108, h: 3, w: 2), k(7, '2'), k(12, '3'), k(17, '4'),
-      k(22, ',', y: 108, h: 4, w: 2), k(24, '5'), k(29, '6'), k(40, 'TL'),
-      k(0, 'X', y: 130), // sonraki satır ayrı kalır
-    ]);
-    expect(r.map((e) => e.t).toList(), ['1.234,56 TL', 'X']);
-    expect(r.first.y, 100);
+  test('parcalariBirlestir: gerçek pdfium karakter kutularından 4 satır birebir', () {
+    final j = jsonDecode(File('test/ornekler/yapikredi_karakterler.json').readAsStringSync());
+    final k = [
+      for (final c in j as List)
+        MetinParcasi(
+          (c[1] as num).toDouble(),
+          (c[2] as num).toDouble(),
+          (c[3] as num).toDouble(),
+          (c[4] as num).toDouble(),
+          c[0] as String,
+        ),
+    ];
+    final parcalar = parcalariBirlestir(k);
+    expect(parcalar.map((p) => p.t), containsAll(['1.234,56 TL', '1.000,00 TL', '-250,40 TL']));
+    _dogrula(yapiKrediOku(parcalar)!);
   });
 
   test('int64 taşıran tutar ve bakiye çökertmez, satır atlanır', () {

@@ -21,7 +21,8 @@ Future<List<MetinParcasi>> pdfParcalari(Uint8List bayt) async {
       if (metin == null) continue;
       for (var k = 0; k < metin.fullText.length && k < metin.charRects.length; k++) {
         final r = metin.charRects[k];
-        if (metin.fullText[k].trim().isEmpty || r.isEmpty) continue;
+        final bosluk = metin.fullText[k].trim().isEmpty;
+        if (!bosluk && r.isEmpty) continue;
         karakterler.add(
           MetinParcasi(
             r.left,

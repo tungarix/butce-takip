@@ -1,44 +1,57 @@
-// Karakter/parça kutularını sözcük gruplarına birleştirir (PyMuPDF span'ına benzer). Saf Dart.
+// Karakter kutularını metin parçalarına birleştirir. Saf Dart.
 
 import 'dokum.dart';
 
-/// Satır, kutuların dikey örtüşmesine göre kurulur (sıkı glif kutularında '.' ve ',' alçakta
-/// durur, üst y'leri farklıdır). Aynı satırdaki, aradaki boşluğu satır yüksekliğinden küçük
-/// parçalar birleşir; sütunlar arası büyük boşluk ayırır. Girdi sırası önemsizdir.
-/// Çıkan parçaların y/h değeri satır bandından gelir.
-List<MetinParcasi> parcalariBirlestir(List<MetinParcasi> girdi) {
-  final sirali = [...girdi]..sort((a, b) => a.y.compareTo(b.y));
+/// [karakterler] pdfium'un fullText sırasındadır; boşluk karakterleri (' ', '\r', '\n')
+/// dahildir, kutuları önemsizdir. Boşluk karakteri sözcük arası olur, '\n' parçayı keser.
+/// Aynı parçada kalmak için karakter, parçanın dikey bandıyla örtüşmeli (',' ve '.' altta, '*' üstte durur; satırlar arası boşluk örtüşmeyi keser) ve
+/// aradaki yatay boşluk 1,5 x satır yüksekliğinden küçük olmalı (sütunlar arası boşluk keser).
+/// Çıkan parçanın y/h değeri üyelerin birleşik bandıdır.
+List<MetinParcasi> parcalariBirlestir(List<MetinParcasi> karakterler) {
   final sonuc = <MetinParcasi>[];
-  var i = 0;
-  while (i < sirali.length) {
-    final ust = sirali[i].y;
-    var alt = ust + sirali[i].h;
-    final uyeler = <MetinParcasi>[sirali[i++]];
-    // Kutunun en az yarısı banda giriyorsa aynı satırdır.
-    while (i < sirali.length) {
-      final p = sirali[i];
-      final ortusme = (alt < p.y + p.h ? alt : p.y + p.h) - p.y;
-      if (ortusme <= p.h * 0.5) break;
-      uyeler.add(p);
-      if (p.y + p.h > alt) alt = p.y + p.h;
-      i++;
-    }
-    final h = alt - ust;
-    final satir = [for (final p in uyeler) MetinParcasi(p.x, ust, p.w, h, p.t)]
-      ..sort((a, b) => a.x.compareTo(b.x));
-    var grup = satir.first;
-    for (final p in satir.skip(1)) {
-      final bosluk = p.x - (grup.x + grup.w);
-      if (bosluk < h) {
-        // Küçük boşluk sözcük arası sayılır, daha küçüğü bitişik harf.
-        final ek = bosluk > h * 0.2 ? ' ' : '';
-        grup = MetinParcasi(grup.x, ust, p.x + p.w - grup.x, h, '${grup.t}$ek${p.t}');
+  final metin = StringBuffer();
+  double x = 0, sag = 0, ust = 0, alt = 0, enYuksek = 0;
+  var acik = false, bosluk = false;
+
+  void kes() {
+    if (acik) sonuc.add(MetinParcasi(x, ust, sag - x, alt - ust, metin.toString()));
+    metin.clear();
+    acik = bosluk = false;
+  }
+
+  for (final k in karakterler) {
+    if (k.t.trim().isEmpty) {
+      if (k.t.contains('\n')) {
+        kes();
       } else {
-        sonuc.add(grup);
-        grup = p;
+        bosluk = true;
+      }
+      continue;
+    }
+    if (acik) {
+      final kAlt = k.y + k.h;
+      final ortusme = (alt < kAlt ? alt : kAlt) - (ust > k.y ? ust : k.y);
+      final yukseklik = enYuksek > k.h ? enYuksek : k.h;
+      if (ortusme <= 0 || k.x - sag > yukseklik * 1.5 || k.x < sag - yukseklik) {
+        kes();
       }
     }
-    sonuc.add(grup);
+    if (!acik) {
+      x = k.x;
+      ust = k.y;
+      alt = k.y + k.h;
+      enYuksek = k.h;
+      acik = true;
+    } else {
+      if (bosluk) metin.write(' ');
+      if (k.y < ust) ust = k.y;
+      if (k.y + k.h > alt) alt = k.y + k.h;
+      if (k.h > enYuksek) enYuksek = k.h;
+    }
+    bosluk = false;
+    metin.write(k.t);
+    sag = k.x + k.w;
   }
+  kes();
   return sonuc;
 }

@@ -483,24 +483,26 @@ class _BakiyeKarti extends ConsumerWidget {
         onTap: () => bakiyeSayfasiAc(context),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(
+          // Tutar kendi satırında: uzun tutar açıklamayı sıkıştırmasın.
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(toplamBakiyeEtiket, style: tema.textTheme.labelLarge),
-                    Text(toplamBakiyeAciklama, style: tema.textTheme.bodySmall),
-                  ],
-                ),
-              ),
+              Text(toplamBakiyeEtiket, style: tema.textTheme.titleMedium),
+              const SizedBox(height: 4),
               Text(
                 bakiye == null ? '' : paraYaz(bakiye),
                 key: const ValueKey('ozet-bakiye'),
-                style: tema.textTheme.titleLarge?.copyWith(
+                style: tema.textTheme.headlineMedium?.copyWith(
                   color: bakiye != null && bakiye < 0
                       ? tema.colorScheme.error
                       : null,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                toplamBakiyeAciklama,
+                style: tema.textTheme.bodySmall?.copyWith(
+                  color: tema.colorScheme.onSurfaceVariant,
                 ),
               ),
             ],

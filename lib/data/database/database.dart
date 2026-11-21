@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart';
 
 import '../../akilli/normalize.dart';
@@ -29,6 +31,11 @@ typedef IceAktarSatiri = ({
   bool gelir,
   int kategoriId,
 });
+
+/// Sıfırlamadan önce veritabanı kopyası alınamadı; hiçbir şey silinmedi.
+class SifirlamaKopyasiHatasi implements Exception {
+  const SifirlamaKopyasiHatasi();
+}
 
 enum AdHatasi { bos, ayni, ayrilmis }
 
@@ -517,6 +524,55 @@ class AppDatabase extends _$AppDatabase {
     )..where((s) => s.key.isIn(anahtarlar))).get())
       s.key,
   };
+
+  // Verileri sıfırlama. İkisi de önce [kopyaYolu]na VACUUM INTO ile kopya alır (üstüne yazar);
+  // kopya alınamazsa hiçbir şey silinmez.
+
+  Future<void> _sifirlamaKopyasi(String kopyaYolu) async {
+    try {
+      final f = File(kopyaYolu);
+      if (f.existsSync()) f.deleteSync();
+      // Tutarlı anlık görüntü; transaction dışında çalışmalı.
+      await customStatement('VACUUM INTO ?', [kopyaYolu]);
+    } catch (_) {
+      throw const SifirlamaKopyasiHatasi();
+    }
+  }
+
+  Future<int> islemSayisi() async => (await islemSayisiVeIlkIzle().first).sayi;
+
+  /// Tüm işlemleri, açılış bakiyesini ve işlemlere bağlı ayarları (aşım uyarıları, reddedilen
+  /// tekrar önerileri) siler. Kategoriler, limitler, öğrenilmiş kelimeler ve diğer ayarlar kalır.
+  Future<void> islemleriSifirla({required String kopyaYolu}) async {
+    await _sifirlamaKopyasi(kopyaYolu);
+    await transaction(() async {
+      await delete(transactions).go();
+      await (delete(settings)..where(
+            (s) =>
+                s.key.equals(acilisBakiyeAnahtari) |
+                s.key.like(r'alert\_%', escapeChar: r'\') |
+                s.key.like(r'tekrar\_red\_%', escapeChar: r'\'),
+          ))
+          .go();
+    });
+  }
+
+  /// Uygulamayı ilk kurulum haline döndürür (tohum yeniden yazılır, sayaçlar sıfırlanır);
+  /// yalnız cihaza özel 'update_' ayarları korunur.
+  Future<void> herSeyiSifirla({required String kopyaYolu}) async {
+    await _sifirlamaKopyasi(kopyaYolu);
+    await transaction(() async {
+      await delete(transactions).go();
+      await delete(budgets).go();
+      await delete(keywordHits).go();
+      await delete(categories).go();
+      await (delete(
+        settings,
+      )..where((s) => s.key.like(r'update\_%', escapeChar: r'\').not())).go();
+      await customStatement('DELETE FROM sqlite_sequence');
+      await _tohumla();
+    });
+  }
 
   Future<void> _tohumla() async {
     final idler = <String, int>{};

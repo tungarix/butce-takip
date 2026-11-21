@@ -205,3 +205,6 @@ Arda istedi: bankadan bakiye çekme mümkün değil (lisans gerekir, banka şifr
   tüm satırlar işaretsiz gelir ve bakiye eşitleme sorulmaz. OCR yalnız metin katmanı olmayan PDF'te çalışır.
 - Gizlilik: ML Kit, Google'ın veri açıklamasına göre kullanım/performans ölçümü gönderebilir, kapatma yolu
   belgelenmemiş; resim içeriği listede yok. Gerçek cihazda doğrulanmadı.
+
+## v0.3.2-S: verileri sıfırlama (21 Kas, Arda istedi)
+- Ayarlar'da iki mod: yalnız işlemler (işlemler, açılış bakiyesi, uyarı ve tekrar reddi ayarları gider) ve her şey (ilk kurulum haline döner, sayaçlar sıfırlanır; cihaza özel `update_` ayarları korunur). İkisi de tek transaction; önce `VACUUM INTO` ile `butce_takip_sifirlama_oncesi.sqlite` kopyası, alınamazsa hiçbir şey silinmez. Şema ve sürüm numarası değişmedi.

@@ -205,3 +205,21 @@ const dokumRehberMetin =
 const dokumRehberBankalar = 'Desteklenen bankalar: Yapı Kredi, Ziraat Bankası';
 const dokumRehberSec = 'PDF seç';
 const dokumRehberKapat = 'Kapat';
+
+// Verileri sıfırlama.
+const sifirlaBaslik = 'Verileri sıfırla';
+const sifirlaAltyazi = 'İşlemleri ya da her şeyi sil';
+const sifirlaSadeceIslemler = 'Yalnız işlemleri sil';
+const sifirlaSadeceIslemlerAlt = 'Kategoriler, limitler ve ayarlar kalır';
+const sifirlaHepsi = 'Her şeyi sıfırla';
+const sifirlaHepsiAlt = 'Uygulama ilk kurulduğu hale döner';
+const sifirlaYedekOnerisi = 'Önce yedek almanı öneririz.';
+const sifirlaYedekDugmesi = 'Yedeği dosyaya kaydet';
+const sifirlaEtiket = 'Sıfırla';
+String sifirlaOnayMetni(int islem, bool hepsi) =>
+    '$islem işlem silinecek. Bu geri alınamaz.'
+    '${hepsi ? ' Kategorilerin, limitlerin ve öğrenilen öneriler de silinir.' : ''}';
+const sifirlandi = 'Veriler sıfırlandı';
+const sifirlamaKopyasiHatasi =
+    'Mevcut verilerin kopyası alınamadı, sıfırlama yapılmadı.';
+const sifirlamaBasarisiz = 'Sıfırlama yapılamadı, verilerin değişmedi.';

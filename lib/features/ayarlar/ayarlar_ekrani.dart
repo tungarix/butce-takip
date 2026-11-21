@@ -8,6 +8,7 @@ import '../../ui_metin.dart';
 import '../ice_aktar/onizleme_ekrani.dart';
 import 'guncelleme_bolumu.dart';
 import 'kategoriler_ekrani.dart';
+import 'sifirla_sayfasi.dart';
 import 'yedek_islemleri.dart';
 
 class AyarlarEkrani extends ConsumerWidget {
@@ -50,6 +51,13 @@ class AyarlarEkrani extends ConsumerWidget {
           title: const Text(geriYukleBaslik),
           subtitle: const Text(geriYukleAltyazi),
           onTap: () => geriYukle(context, ref),
+        ),
+        ListTile(
+          key: const ValueKey('verileri-sifirla'),
+          leading: const Icon(Icons.delete_forever_outlined),
+          title: const Text(sifirlaBaslik),
+          subtitle: const Text(sifirlaAltyazi),
+          onTap: () => sifirlaSayfasiAc(context),
         ),
         ListTile(
           key: const ValueKey('dokum-aktar'),

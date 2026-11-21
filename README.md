@@ -20,6 +20,7 @@ Not (Ziraat dökümü): Ziraat PDF'i resimdir, bu yüzden telefonda Google ML Ki
 - Özet: bu ay harcanan, kalan ve ay sonu tahmini.
 - Cihaz içinde, kural tabanlı öneriler: nottan kategori önerisi, tekrarlayan gider önerisi, bütçe aşım bildirimi (limitin %80 ve %100'ünde).
 - JSON yedek: dosyaya kaydet ya da paylaş, geri yükle.
+- Verileri sıfırla (Ayarlar): yalnız işlemleri sil ya da her şeyi ilk kurulum haline döndür; önce veritabanının kopyası alınır.
 
 ## Kurulum
 

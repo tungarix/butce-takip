@@ -68,6 +68,15 @@ String limitDurumMetni(String ad, int yuzde) =>
     yuzde >= 100 ? '$ad bütçesi doldu (%$yuzde)' : '$ad bütçesi %$yuzde doldu';
 String yuzdeEtiket(int yuzde) => '%$yuzde';
 
+// Toplam bakiye
+const toplamBakiyeEtiket = 'Toplam bakiye';
+const toplamBakiyeAciklama =
+    'Tüm gelirler eksi tüm giderler, başlangıç bakiyesiyle';
+const bankaBakiyeBaslik = 'Bankadaki bakiyen kaç?';
+const bakiyeArtiEtiket = 'Artı';
+const bakiyeEksiEtiket = 'Eksi';
+const bakiyeSifirlaEtiket = 'Sıfırla';
+
 // Akıllı özellikler
 const oneriliEtiket = 'önerilen';
 String cipSemantigi(String ad, bool onerilen) =>

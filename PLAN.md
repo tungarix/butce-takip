@@ -146,7 +146,7 @@ drift_schemas/
 Arda istedi: bankadan bakiye çekme mümkün değil (lisans gerekir, banka şifresi saklanmaz), onun yerine
 "hem döküm içe aktarma hem tüm bakiyeyi gösterme olsun". İnternet izni ve şema değişikliği yok.
 
-## A. Toplam bakiye (küçük)
+## A. Toplam bakiye (küçük) (yapıldı)
 - Özet'in en üstünde ay seçiciden bağımsız kart: **Toplam bakiye = açılış bakiyesi + tüm gelirler − tüm
   giderler**. Eksi olabilir (kırmızı).
 - Açılış bakiyesi `settings` tablosunda `acilis_bakiye` (kuruş, işaretli int). Yedekle taşınır.

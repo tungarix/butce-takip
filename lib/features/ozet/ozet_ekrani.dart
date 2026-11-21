@@ -15,6 +15,7 @@ import '../ayarlar/yedek_islemleri.dart';
 import '../ayarlar/kategoriler_ekrani.dart';
 import '../hizli_giris/hizli_giris.dart';
 import '../ikonlar.dart';
+import 'bakiye_sayfasi.dart';
 
 class OzetEkrani extends ConsumerWidget {
   const OzetEkrani({super.key});
@@ -118,6 +119,8 @@ class _OzetListesi extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
       children: [
         const _YedekKarti(),
+        const _BakiyeKarti(),
+        const SizedBox(height: 8),
         _Kart(
           anahtar: 'harcanan',
           baslik: buAyHarcanan,
@@ -459,6 +462,49 @@ class _YedekKarti extends ConsumerWidget {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Ay seçiciden bağımsız toplam bakiye; dokununca bankadaki bakiyeye eşitleme penceresi açılır.
+class _BakiyeKarti extends ConsumerWidget {
+  const _BakiyeKarti();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tema = Theme.of(context);
+    final bakiye = ref.watch(toplamBakiyeProvider);
+    return Card(
+      key: const ValueKey('bakiye-karti'),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => bakiyeSayfasiAc(context),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(toplamBakiyeEtiket, style: tema.textTheme.labelLarge),
+                    Text(toplamBakiyeAciklama, style: tema.textTheme.bodySmall),
+                  ],
+                ),
+              ),
+              Text(
+                bakiye == null ? '' : paraYaz(bakiye),
+                key: const ValueKey('ozet-bakiye'),
+                style: tema.textTheme.titleLarge?.copyWith(
+                  color: bakiye != null && bakiye < 0
+                      ? tema.colorScheme.error
+                      : null,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

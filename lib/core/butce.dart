@@ -1,6 +1,8 @@
 // Limit yüzdesi ve özet hesabı. Saf Dart: arayüz ve veritabanı içe aktarılmaz.
 // Aşama 4'teki aşım bildirimi de aynı fonksiyonları kullanır.
 
+import 'para.dart';
+
 enum LimitDurumu { normal, uyari, asim }
 
 /// harcanan * 100 ~/ limit. Limit yoksa (<= 0) 0.
@@ -88,4 +90,17 @@ Ozet ozetHesapla({
     limitli: limitli,
     limitsiz: limitsiz,
   );
+}
+
+/// Toplam bakiye = açılış + tüm gelir - tüm gider (kuruş, işaretli; eksi olabilir).
+int toplamBakiye(int acilis, int tumGelir, int tumGider) =>
+    acilis + tumGelir - tumGider;
+
+/// Toplam bakiyeyi [bankaBakiyesi]ne eşitleyen açılış bakiyesi. Bankadaki değerin mutlak değeri
+/// üst sınırı aşarsa RangeError.
+int bankaBakiyesindenAcilis(int bankaBakiyesi, int tumGelir, int tumGider) {
+  if (bankaBakiyesi.abs() > paraUstSinirKurus) {
+    throw RangeError.value(bankaBakiyesi, 'bankaBakiyesi');
+  }
+  return bankaBakiyesi - (tumGelir - tumGider);
 }

@@ -17,6 +17,9 @@ const sonYedekAnahtari = 'son_yedek'; // epoch ms
 const yedekErtelemeAnahtari =
     'yedek_ertele'; // yyyymmdd; bu güne kadar hatırlatma yok
 
+const acilisBakiyeAnahtari =
+    'acilis_bakiye'; // kuruş, işaretli int metni; yoksa 0
+
 enum AdHatasi { bos, ayni, ayrilmis }
 
 /// Kategori adı boş, başka bir kategoriyle aynı (büyük/küçük harf ve kenar boşluğu farkı sayılmaz)
@@ -369,6 +372,33 @@ class AppDatabase extends _$AppDatabase {
                 ),
             ],
           );
+
+  /// Tüm zamanların gelir ve gider toplamı: tarih filtresi yok, ileri tarihli işlemler dahil.
+  Stream<({int gelir, int gider})> tumToplamlariIzle() {
+    final gelir = transactions.amountKurus.sum(
+      filter: transactions.isIncome.equals(true),
+    );
+    final gider = transactions.amountKurus.sum(
+      filter: transactions.isIncome.equals(false),
+    );
+    return (selectOnly(transactions)..addColumns([gelir, gider]))
+        .watchSingle()
+        .map((r) => (gelir: r.read(gelir) ?? 0, gider: r.read(gider) ?? 0));
+  }
+
+  Future<({int gelir, int gider})> tumToplamlar() => tumToplamlariIzle().first;
+
+  /// Açılış bakiyesi; ayar yoksa ya da okunamıyorsa 0.
+  static int acilisCoz(String? metin) => int.tryParse(metin ?? '') ?? 0;
+
+  Stream<int> acilisBakiyeIzle() =>
+      ayarIzle(acilisBakiyeAnahtari).map(acilisCoz);
+
+  Future<int> acilisBakiyeOku() async =>
+      acilisCoz(await ayarOku(acilisBakiyeAnahtari));
+
+  Future<void> acilisBakiyeYaz(int kurus) =>
+      ayarYaz(acilisBakiyeAnahtari, '$kurus');
 
   /// Notun [sozcukler]i için kayıtlı anahtar kelime satırları.
   Future<List<KeywordHit>> anahtarSatirlari(List<String> sozcukler) =>

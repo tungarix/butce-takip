@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../akilli/tekrar_tespit.dart';
+import '../core/butce.dart';
 import '../core/tarih.dart';
 import '../platform/bildirimler.dart';
 import 'yedek.dart';
@@ -101,4 +102,21 @@ final yedekHatirlatmaProvider = Provider<bool>((ref) {
     ilkIslemMs: ozet.ilk,
     ertelemeGunu: int.tryParse(ref.watch(_yedekErtelemeProvider).value ?? ''),
   );
+});
+
+// Drift akışları işlem, kategori silme ve yedek geri yükleme sonrası kendiliğinden yenilenir;
+// bu yüzden elle invalidate gerekmez.
+final _tumToplamlarProvider = StreamProvider<({int gelir, int gider})>(
+  (ref) => ref.watch(databaseProvider).tumToplamlariIzle(),
+);
+
+final _acilisBakiyeProvider = StreamProvider<int>(
+  (ref) => ref.watch(databaseProvider).acilisBakiyeIzle(),
+);
+
+/// Ay seçiciden bağımsız toplam bakiye (kuruş); yüklenene kadar null.
+final toplamBakiyeProvider = Provider<int?>((ref) {
+  final t = ref.watch(_tumToplamlarProvider).value;
+  final a = ref.watch(_acilisBakiyeProvider).value;
+  return t == null || a == null ? null : toplamBakiye(a, t.gelir, t.gider);
 });

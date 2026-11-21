@@ -81,7 +81,7 @@ void uiTest(String ad, Future<void> Function(WidgetTester t) govde) {
 }
 
 void telefonBoyutu(WidgetTester tester) {
-  tester.view.physicalSize = const Size(400, 900);
+  tester.view.physicalSize = const Size(400, 1100);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
 }

@@ -63,6 +63,10 @@ android {
             signingConfig = signingConfigs.getByName(
                 if (surumAnahtari != null) "surum" else "debug"
             )
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
 }

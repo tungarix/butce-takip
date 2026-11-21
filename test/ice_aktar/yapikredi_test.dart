@@ -110,4 +110,31 @@ void main() {
     expect(r.map((e) => e.t).toList(), ['AB C', 'X', 'Y']);
     expect(r.first.x, 100);
   });
+
+  test('parcalariBirlestir: sıkı glif kutuları (farklı üst y ve yükseklik) tek satır', () {
+    // Rakamlar 10 yüksek; ',' ve '.' alçakta, kısa durur.
+    MetinParcasi k(double x, String t, {double y = 100, double h = 10, double w = 5}) =>
+        MetinParcasi(x, y, w, h, t);
+    final r = parcalariBirlestir([
+      k(0, '1'), k(5, '.', y: 108, h: 3, w: 2), k(7, '2'), k(12, '3'), k(17, '4'),
+      k(22, ',', y: 108, h: 4, w: 2), k(24, '5'), k(29, '6'), k(40, 'TL'),
+      k(0, 'X', y: 130), // sonraki satır ayrı kalır
+    ]);
+    expect(r.map((e) => e.t).toList(), ['1.234,56 TL', 'X']);
+    expect(r.first.y, 100);
+  });
+
+  test('int64 taşıran tutar ve bakiye çökertmez, satır atlanır', () {
+    const dev = '-999.999.999.999.999.999.999,99 TL';
+    final p = _ornek()
+        .map((e) => e.t == '-250,40 TL' ? MetinParcasi(e.x, e.y, e.w, e.h, dev) : e)
+        .toList();
+    final d = yapiKrediOku(p)!;
+    expect(d.satirlar, hasLength(3));
+    expect(d.atlanan, 1);
+    final b = _ornek()
+        .map((e) => e.t == '1.234,56 TL' ? MetinParcasi(e.x, e.y, e.w, e.h, '9.999.999.999.999.999.999,99 TL') : e)
+        .toList();
+    expect(yapiKrediOku(b)!.satirlar, hasLength(4));
+  });
 }

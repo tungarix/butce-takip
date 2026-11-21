@@ -12,7 +12,8 @@ final _tutarRe = RegExp(r'^(-)?(\d{1,3}(?:\.\d{3})*|\d{1,15}),(\d{2}) TL$');
 int? _kurus(String t, {required bool eksili}) {
   final m = _tutarRe.firstMatch(t.trim());
   if (m == null || (!eksili && m[1] != null)) return null;
-  final v = int.parse('${m[2]!.replaceAll('.', '')}${m[3]}');
+  final v = int.tryParse('${m[2]!.replaceAll('.', '')}${m[3]}'); // taşarsa null
+  if (v == null) return null;
   return m[1] != null ? -v : v;
 }
 

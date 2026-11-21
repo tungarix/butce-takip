@@ -2,33 +2,37 @@
 
 import 'dokum.dart';
 
-/// Aynı y bandındaki, aradaki boşluğu yazı yüksekliğinden küçük parçalar birleşir;
-/// sütunlar arası büyük boşluk ayırır. Girdi sırası önemsizdir.
+/// Satır, kutuların dikey örtüşmesine göre kurulur (sıkı glif kutularında '.' ve ',' alçakta
+/// durur, üst y'leri farklıdır). Aynı satırdaki, aradaki boşluğu satır yüksekliğinden küçük
+/// parçalar birleşir; sütunlar arası büyük boşluk ayırır. Girdi sırası önemsizdir.
+/// Çıkan parçaların y/h değeri satır bandından gelir.
 List<MetinParcasi> parcalariBirlestir(List<MetinParcasi> girdi) {
   final sirali = [...girdi]..sort((a, b) => a.y.compareTo(b.y));
   final sonuc = <MetinParcasi>[];
   var i = 0;
   while (i < sirali.length) {
-    // Satır: ilk parçanın yüksekliğinin yarısı içindeki y'ler.
-    final ilk = sirali[i];
-    final satir = <MetinParcasi>[];
-    while (i < sirali.length && (sirali[i].y - ilk.y).abs() < ilk.h * 0.5) {
-      satir.add(sirali[i++]);
+    final ust = sirali[i].y;
+    var alt = ust + sirali[i].h;
+    final uyeler = <MetinParcasi>[sirali[i++]];
+    // Kutunun en az yarısı banda giriyorsa aynı satırdır.
+    while (i < sirali.length) {
+      final p = sirali[i];
+      final ortusme = (alt < p.y + p.h ? alt : p.y + p.h) - p.y;
+      if (ortusme <= p.h * 0.5) break;
+      uyeler.add(p);
+      if (p.y + p.h > alt) alt = p.y + p.h;
+      i++;
     }
-    satir.sort((a, b) => a.x.compareTo(b.x));
+    final h = alt - ust;
+    final satir = [for (final p in uyeler) MetinParcasi(p.x, ust, p.w, h, p.t)]
+      ..sort((a, b) => a.x.compareTo(b.x));
     var grup = satir.first;
     for (final p in satir.skip(1)) {
       final bosluk = p.x - (grup.x + grup.w);
-      if (bosluk < grup.h) {
+      if (bosluk < h) {
         // Küçük boşluk sözcük arası sayılır, daha küçüğü bitişik harf.
-        final ek = bosluk > grup.h * 0.2 ? ' ' : '';
-        grup = MetinParcasi(
-          grup.x,
-          grup.y < p.y ? grup.y : p.y,
-          p.x + p.w - grup.x,
-          grup.h > p.h ? grup.h : p.h,
-          '${grup.t}$ek${p.t}',
-        );
+        final ek = bosluk > h * 0.2 ? ' ' : '';
+        grup = MetinParcasi(grup.x, ust, p.x + p.w - grup.x, h, '${grup.t}$ek${p.t}');
       } else {
         sonuc.add(grup);
         grup = p;

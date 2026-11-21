@@ -24,7 +24,7 @@ dependencies:
   file_picker: 13.3.2
   # Geçici dosya ve veritabanı kopyası için (drift_flutter'ın zaten çektiği paket).
   path_provider: ^2.1.6
-  pdfrx: 3.0.0
+  pdfrx: 2.6.6
 
 dev_dependencies:
   flutter_test:

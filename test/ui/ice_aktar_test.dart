@@ -129,4 +129,84 @@ void main() {
     );
     expect(find.byKey(const ValueKey('dokum-uyari')), findsNothing);
   });
+
+  uiTest(
+    'OCR + tutarsız döküm: tüm satırlar işaretsiz, uyarı görünür, bakiye sorulmaz',
+    (t) async {
+      telefonBoyutu(t);
+      final db = await bellekDb(t);
+      await uygulamaAc(t, db);
+      onizlemeAc(
+        t,
+        Dokum(
+          banka: 'Ziraat Bankası',
+          ocr: true,
+          tutarsiz: true,
+          sonBakiyeKurus: 123456,
+          satirlar: [
+            satir('MIGROS SANAL MARKET', 25344),
+            satir('ISTANBULKART', 10000),
+          ],
+        ),
+      );
+      await bekle(t);
+      expect(find.byKey(const ValueKey('dokum-ocr-bilgi')), findsOneWidget);
+      expect(find.text(dokumOcrBilgi), findsOneWidget);
+      expect(find.text(dokumOcrTutarsiz), findsOneWidget);
+      for (var i = 0; i < 2; i++) {
+        expect(
+          t.widget<Checkbox>(find.byKey(ValueKey('dokum-isaret-$i'))).value,
+          isFalse,
+        );
+      }
+      // Kullanıcı işaretleyip ekler: bakiye eşitleme penceresi çıkmaz.
+      await t.tap(find.byKey(const ValueKey('dokum-isaret-0')));
+      await bekle(t, 2);
+      await t.tap(find.byKey(const ValueKey('dokum-ekle')));
+      await bekle(t);
+      expect(find.text(dokumBakiyeSorusu('1.234,56 ₺')), findsNothing);
+      expect(find.text(dokumEklendi(1)), findsOneWidget);
+    },
+  );
+
+  uiTest('OCR + tutarlı döküm: bilgi var, satırlar işaretli, uyarı yok', (
+    t,
+  ) async {
+    telefonBoyutu(t);
+    final db = await bellekDb(t);
+    await uygulamaAc(t, db);
+    onizlemeAc(
+      t,
+      Dokum(
+        banka: 'Ziraat Bankası',
+        ocr: true,
+        satirlar: [satir('MIGROS SANAL MARKET', 25344)],
+      ),
+    );
+    await bekle(t);
+    expect(find.text(dokumOcrBilgi), findsOneWidget);
+    expect(find.byKey(const ValueKey('dokum-uyari')), findsNothing);
+    expect(
+      t.widget<Checkbox>(find.byKey(const ValueKey('dokum-isaret-0'))).value,
+      isTrue,
+    );
+  });
+
+  uiTest('Ayarlar: rehber alt sayfası açılır, Kapat kapatır', (t) async {
+    telefonBoyutu(t);
+    final db = await bellekDb(t);
+    await uygulamaAc(t, db);
+    await t.tap(find.text(sekmeAyarlar).first);
+    await bekle(t);
+    await t.ensureVisible(find.byKey(const ValueKey('dokum-aktar')));
+    await t.tap(find.byKey(const ValueKey('dokum-aktar')));
+    await bekle(t);
+    expect(find.text(dokumRehberBaslik), findsOneWidget);
+    expect(find.text(dokumRehberMetin), findsOneWidget);
+    expect(find.text(dokumRehberBankalar), findsOneWidget);
+    expect(find.byKey(const ValueKey('dokum-rehber-sec')), findsOneWidget);
+    await t.tap(find.byKey(const ValueKey('dokum-rehber-kapat')));
+    await bekle(t);
+    expect(find.text(dokumRehberBaslik), findsNothing);
+  });
 }

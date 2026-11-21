@@ -25,6 +25,7 @@ dependencies:
   # Geçici dosya ve veritabanı kopyası için (drift_flutter'ın zaten çektiği paket).
   path_provider: ^2.1.6
   pdfrx: 2.6.6
+  google_mlkit_text_recognition: ^1.0.3
 
 dev_dependencies:
   flutter_test:

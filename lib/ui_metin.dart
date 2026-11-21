@@ -196,3 +196,12 @@ String dokumBakiyeSorusu(String tutar) =>
 const dokumBakiyeEvet = 'Eşitle';
 const dokumBakiyeHayir = 'Hayır';
 const dokumKategoriSec = 'Kategori seç';
+const dokumOcrBilgi =
+    'Döküm görüntüden okundu. Tutarları bankadakiyle karşılaştır.';
+const dokumOcrTutarsiz = 'Bazı tutarlar doğrulanamadı';
+const dokumRehberBaslik = 'Banka dökümünü içe aktar';
+const dokumRehberMetin =
+    "Bankanın uygulamasında hesap hareketlerini aç, PDF olarak paylaş ve listeden Bütçe Takip'i seç. Ya da indirdiğin PDF'i buradan seç.";
+const dokumRehberBankalar = 'Desteklenen bankalar: Yapı Kredi, Ziraat Bankası';
+const dokumRehberSec = 'PDF seç';
+const dokumRehberKapat = 'Kapat';

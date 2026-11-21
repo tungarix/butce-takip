@@ -43,6 +43,47 @@ Future<void> dokumSec(BuildContext context) async {
   }
 }
 
+/// Ayarlar: önce kısa "nasıl yapılır" alt sayfası, "PDF seç" dosya seçiciyi açar.
+Future<void> dokumRehberiAc(BuildContext context) async {
+  final sec = await showModalBottomSheet<bool>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    builder: (ctx) => Padding(
+      padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + altBosluk(ctx)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(dokumRehberBaslik, style: Theme.of(ctx).textTheme.titleLarge),
+          const SizedBox(height: 12),
+          const Text(dokumRehberMetin),
+          const SizedBox(height: 12),
+          const Text(dokumRehberBankalar),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                key: const ValueKey('dokum-rehber-kapat'),
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text(dokumRehberKapat),
+              ),
+              const SizedBox(width: 8),
+              FilledButton(
+                key: const ValueKey('dokum-rehber-sec'),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text(dokumRehberSec),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+  if (sec == true && context.mounted) await dokumSec(context);
+}
+
 /// "Paylaş" ile gelen PDF varsa okur, geçici dosyayı siler, önizlemeyi açar.
 Future<void> paylasilaniAc(BuildContext context, Kopru? kopru) async {
   if (kopru == null) return;
@@ -161,14 +202,17 @@ class _OnizlemeState extends ConsumerState<OnizlemeEkrani> {
         final etiket = varMi[i]
             ? dokumZatenVar
             : (kendi ? dokumKendiHesap : null);
-        satirlar.add(_Satir(oneri ?? diger.id, etiket, etiket == null));
+        // OCR'da tutarlar doğrulanamadıysa hiçbir satır kendiliğinden işaretli gelmez.
+        final guvenilmez = widget.dokum.ocr && widget.dokum.tutarsiz;
+        satirlar.add(
+          _Satir(oneri ?? diger.id, etiket, etiket == null && !guvenilmez),
+        );
       }
       if (mounted) setState(() => _satirlar = satirlar);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text(dokumOkunamadi)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text(dokumOkunamadi)));
       Navigator.pop(context);
     }
   }
@@ -228,7 +272,10 @@ class _OnizlemeState extends ConsumerState<OnizlemeEkrani> {
       ]);
       final banka = widget.dokum.sonBakiyeKurus;
       try {
-        if (banka != null && mounted) await _bakiyeSor(db, banka);
+        final guvenilmez = widget.dokum.ocr && widget.dokum.tutarsiz;
+        if (banka != null && mounted && !guvenilmez) {
+          await _bakiyeSor(db, banka);
+        }
       } catch (_) {
         // İşlemler yazıldı; eşitleme başarısızsa kullanıcı Özet'ten elle yapabilir.
       }
@@ -276,6 +323,7 @@ class _OnizlemeState extends ConsumerState<OnizlemeEkrani> {
         c.id: c,
     };
     final satirlar = _satirlar;
+    final ocrTutarsiz = widget.dokum.ocr && widget.dokum.tutarsiz;
     final uyari = widget.dokum.atlanan > 0 || widget.dokum.tutarsiz;
     return Scaffold(
       appBar: AppBar(
@@ -285,13 +333,27 @@ class _OnizlemeState extends ConsumerState<OnizlemeEkrani> {
           ? const SizedBox()
           : Column(
               children: [
+                if (widget.dokum.ocr)
+                  Material(
+                    color: tema.colorScheme.secondaryContainer,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(
+                        dokumOcrBilgi,
+                        key: const ValueKey('dokum-ocr-bilgi'),
+                        style: TextStyle(
+                          color: tema.colorScheme.onSecondaryContainer,
+                        ),
+                      ),
+                    ),
+                  ),
                 if (uyari)
                   Material(
                     color: tema.colorScheme.errorContainer,
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Text(
-                        dokumUyari,
+                        ocrTutarsiz ? dokumOcrTutarsiz : dokumUyari,
                         key: const ValueKey('dokum-uyari'),
                         style: TextStyle(
                           color: tema.colorScheme.onErrorContainer,

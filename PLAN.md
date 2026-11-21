@@ -7,7 +7,7 @@ Durum: plan, kod yok (2026-11-15). Ad geçici.
 - Flutter, `habit-tracker-mobil` ile aynı yığın: drift 2.34 + drift_flutter, flutter_riverpod 3, intl,
   share_plus, file_picker, flutter_local_notifications. İskelet, `release.yml`, `ci.yml`,
   `guvenlik-kapisi.yml` ve imza ayarı oradan kopyalanır.
-- Hesap yok, sunucu yok. Yalnız güncelleme denetimi için, ve yalnız sen açarsan GitHub'a bağlanır; verilerin telefondan çıkmaz. Dağıtım GitHub Release'te imzalı APK.
+- Hesap yok, sunucu yok. Yalnız güncelleme denetimi için, ve yalnız sen açarsan GitHub'a bağlanır; verilerin telefondan çıkmaz (Ziraat OCR'ında ML Kit'in kullanım ölçümü istisnası: README'deki nota bak). Dağıtım GitHub Release'te imzalı APK.
 - Arayüz Türkçe, para birimi TL, tema sistemi izler.
 - "Akıllı" kısım cihaz içinde ve kural tabanlı. Model, bulut, banka bağlantısı yok.
 
@@ -194,3 +194,14 @@ Arda istedi: bankadan bakiye çekme mümkün değil (lisans gerekir, banka şifr
   işaretsiz gelmeli ya da kullanıcı çıkarabilmeli.
 - PDF okumak Flutter'da yerel PDF motoru paketi ister (ör. pdfium tabanlı); Excel varsa saf Dart
   `excel` paketi daha hafif. Karar Excel seçeneğinin olup olmadığına bağlı.
+
+### Ziraat PDF bulguları (21 Kas, Arda'nın gerçek dökümü; dosya depoya ALINMAZ) (Ziraat OCR ile yapıldı)
+- "Hesap Hareketleri" PDF'i METİN İÇERMEZ: tek sayfa, tek JPEG (1024 px), pdfium metin katmanı boş. Okuma
+  OCR ile: pdfrx sayfayı ~2000 px çizer, `google_mlkit_text_recognition` 1.0.3 (Latin, model APK'ya gömülü,
+  Play Services'siz) kelime (element) kutularını verir; `ice_aktar/ziraat.dart` saf Dart, konuma dayalı.
+- Sütunlar: Tarih (`dd.MM.yyyy`), Fiş No (açıklamaya girmez), Açıklama (tek satır), Tutar (eksi = gider),
+  Bakiye; en yeni üstte; sonda `Borç:` (giderler toplamı) ve `Alacak:` satırları.
+- OCR güvenlik ağı: bakiye zinciri ve Borç/Alacak toplamları; biri tutmazsa `Dokum.tutarsiz`, önizlemede
+  tüm satırlar işaretsiz gelir ve bakiye eşitleme sorulmaz. OCR yalnız metin katmanı olmayan PDF'te çalışır.
+- Gizlilik: ML Kit, Google'ın veri açıklamasına göre kullanım/performans ölçümü gönderebilir, kapatma yolu
+  belgelenmemiş; resim içeriği listede yok. Gerçek cihazda doğrulanmadı.

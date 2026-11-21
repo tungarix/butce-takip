@@ -56,7 +56,7 @@ class AyarlarEkrani extends ConsumerWidget {
           leading: const Icon(Icons.upload_file_outlined),
           title: const Text(dokumAktarBaslik),
           subtitle: const Text(dokumAktarAltyazi),
-          onTap: () => dokumSec(context),
+          onTap: () => dokumRehberiAc(context),
         ),
         SwitchListTile(
           key: const ValueKey('bildirim-anahtari'),

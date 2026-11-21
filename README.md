@@ -4,6 +4,8 @@ Android için hesapsız, yerel gelir-gider takibi. Arayüz Türkçe, para birimi
 
 **Hesap yok, veri yalnız telefonunda.** Yalnız güncelleme denetimi için, ve yalnız sen açarsan GitHub'a bağlanır; verilerin telefondan çıkmaz.
 
+Not (Ziraat dökümü): Ziraat PDF'i resimdir, bu yüzden telefonda Google ML Kit ile okunur (model uygulamanın içinde, dökümün içeriği telefondan çıkmaz). Google'ın veri açıklamasına göre ML Kit, tanıma sırasında cihaz/uygulama bilgisi, gecikme gibi performans ölçümleri ve hata kodlarını Google'a gönderebilir (HTTPS); açıklamada resim içeriği yer almaz, kapatma yolu belirtilmemiştir (kaynak: developers.google.com/ml-kit/android-data-disclosure). Yapı Kredi dökümünde ML Kit hiç çalışmaz.
+
 > Durum: ilk sürüm (v0.1.0) hazırlanıyor, henüz yayımlanmadı. Plan ve kararlar: [PLAN.md](PLAN.md).
 
 ![Bütçe Takip](docs/ekran-goruntusu.png)
@@ -14,7 +16,7 @@ Android için hesapsız, yerel gelir-gider takibi. Arayüz Türkçe, para birimi
 - 10 hazır kategori; yenisi eklenir, yeniden adlandırılır, arşivlenir ya da silinir (silince işlemleri Diğer / Diğer gelir'e taşınır).
 - Kategori başına aylık limit ve ilerleme çubuğu.
 - Toplam bakiye: tüm gelir eksi tüm gider, başlangıç bakiyesiyle; karta dokunup bankadaki bakiyeye eşitlenir (işlem eklenmez).
-- Hesap dökümü içe aktarma (Yapı Kredi PDF): Ayarlar'dan ya da Android "Paylaş" ile; önizlemede kategori seçilir, zaten kayıtlı ve kendi hesaplar arası satırlar işaretsiz gelir.
+- Hesap dökümü içe aktarma (Yapı Kredi PDF; Ziraat Bankası resimli PDF, OCR ile): Ayarlar'dan ya da Android "Paylaş" ile; önizlemede kategori seçilir, zaten kayıtlı ve kendi hesaplar arası satırlar işaretsiz gelir.
 - Özet: bu ay harcanan, kalan ve ay sonu tahmini.
 - Cihaz içinde, kural tabanlı öneriler: nottan kategori önerisi, tekrarlayan gider önerisi, bütçe aşım bildirimi (limitin %80 ve %100'ünde).
 - JSON yedek: dosyaya kaydet ya da paylaş, geri yükle.

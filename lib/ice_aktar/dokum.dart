@@ -30,6 +30,7 @@ class Dokum {
     this.sonBakiyeKurus,
     this.atlanan = 0,
     this.tutarsiz = false,
+    this.ocr = false,
   });
 
   final String banka;
@@ -43,6 +44,9 @@ class Dokum {
 
   /// Ardışık bakiyeler tutarlarla uyuşmuyorsa true (arayüzde uyarı için).
   final bool tutarsiz;
+
+  /// Görüntüden OCR ile okunduysa true (tutarlar bankadakiyle karşılaştırılmalı).
+  final bool ocr;
 }
 
 class MetinParcasi {

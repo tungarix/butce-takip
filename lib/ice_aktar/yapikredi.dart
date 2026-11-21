@@ -70,15 +70,16 @@ Dokum? yapiKrediOku(List<MetinParcasi> parcalar) {
     ..sort((a, b) => a.y.compareTo(b.y));
   if (cap.isEmpty) return const Dokum(banka: 'Yapı Kredi', satirlar: []);
 
-  // Bant sınırı: iki satırın üst y'sinin ortası (açıklama üstte dikey ortalı durabilir).
-  final alt = <double>[
-    for (var i = 0; i < cap.length; i++)
-      i + 1 < cap.length ? (cap[i].y + cap[i + 1].y) / 2 : cap[i].y + 40,
-  ];
+  // Satırın son açıklama satırı, tutarı ve bakiyesi tarihle aynı y'de; uzun açıklamanın fazla
+  // satırları onun ÜSTÜNDE durur. Bu yüzden parça, hizasındaki ya da altındaki ilk tarihe bağlanır
+  // (satır aralığı ~14, glif kutusu oynaması için pay yarım satır).
+  const pay = 5.0;
   int bant(double y) {
-    if (y <= tb.y + 2 || y > alt.last) return -1;
-    for (var i = 0; i < alt.length; i++) {
-      if (y <= alt[i]) return i;
+    for (var i = 0; i < cap.length; i++) {
+      // En çok ~3 satır yukarı: çok sayfada önceki sayfanın alt bilgisi ilk satıra karışmasın.
+      final onceki = i == 0 ? tb.y + 2 : cap[i - 1].y + pay;
+      final ust = onceki > cap[i].y - 40 ? onceki : cap[i].y - 40;
+      if (y > ust && y <= cap[i].y + pay) return i;
     }
     return -1;
   }

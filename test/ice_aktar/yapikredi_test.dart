@@ -139,4 +139,46 @@ void main() {
         .toList();
     expect(yapiKrediOku(b)!.satirlar, hasLength(4));
   });
+
+  // Gerçek Yapı Kredi dökümünün satır konumları (metinler uydurma): iki satırlı açıklamanın
+  // son satırı tarihle aynı y'de, ilk satırı üstte durur; satır aralığı her yerde ~14.
+  // Orta nokta bandı burada sınırın üstüne düşüp açıklamayı önceki satıra kaydırıyordu.
+  for (final kayma in [0.0, -2.0, 2.0]) {
+    test('gerçek satır geometrisi: açıklama kendi satırında (kayma $kayma)', () {
+      final ust = _ornek().where((p) => p.y < 225 || p.y > 800).toList();
+      MetinParcasi m(double x, double y, String t) => MetinParcasi(x, y, 40, 9, t);
+      MetinParcasi a(double y, String t) => m(276, y + kayma, t);
+      final veri = [
+        m(28, 231, '-'), m(85, 231, '-'), a(231, 'Diğer Bekleyen İşlemler'), m(470, 231, '0,00 TL'), m(564, 231, '-'),
+        m(28, 245, '21/11/2026'), m(85, 245, '16:03:43'), a(245, 'EPOS MIGROS SANAL MARKET  1234 5678'),
+        m(458, 245, '-250,40 TL'), m(525, 245, '1.234,56 TL'),
+        m(28, 274, '21/11/2026'), m(85, 274, '15:33:48'), a(260, 'EPOS SPOTIFY*PREMIUM 1234'), a(274, '5678'),
+        m(458, 274, '-99,99 TL'), m(525, 274, '1.484,96 TL'),
+        m(28, 302, '21/11/2026'), m(85, 302, '15:21:33'), a(288, 'GELEN FAST - AD SOYAD - kendi'), a(302, 'hesabım'),
+        m(454, 302, '1.000,00 TL'), m(525, 302, '1.584,95 TL'),
+        m(28, 331, '21/11/2026'), m(85, 331, '15:19:54'), a(317, 'GELEN FAST - AD SOYAD - kendi'),
+        a(331, 'hesabıma para gönderme'), m(454, 331, '500,00 TL'), m(525, 331, '584,95 TL'),
+      ];
+      _dogrula(yapiKrediOku([...ust, ...veri])!);
+    });
+  }
+
+  test('çok sayfa: önceki sayfanın alt bilgisi sonraki sayfanın ilk satırına karışmaz', () {
+    final ornek = _ornek();
+    // İkinci sayfa: aynı parçalar 10000 aşağıda, ilk sayfanın alt bilgisi (y > 800) arada kalır.
+    final ikinci = [
+      for (final p in ornek)
+        if (p.y > 225 && p.y < 800) MetinParcasi(p.x, p.y + 10000, p.w, p.h, p.t),
+    ];
+    final baslik = [
+      for (final p in ornek)
+        if ((p.y - ornek.firstWhere((e) => e.t.trim() == 'Tarih').y).abs() < 2)
+          MetinParcasi(p.x, p.y + 10000, p.w, p.h, p.t),
+    ];
+    final d = yapiKrediOku([...ornek, ...baslik, ...ikinci])!;
+    expect(d.satirlar, hasLength(8));
+    expect(d.atlanan, 0);
+    expect(d.satirlar[4].aciklama, 'EPOS MIGROS SANAL MARKET 1234 5678');
+    expect(d.satirlar[4].tutarKurus, 25040);
+  });
 }

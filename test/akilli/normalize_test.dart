@@ -65,4 +65,9 @@ void main() {
       }
     }
   });
+
+  test('banka döküm sözcükleri kategori öğrenmesine girmez', () {
+    expect(notSozcukleri('EPOS SPOTIFY* PREMIUM 1234 5678'), ['spotify', 'premium']);
+    expect(notSozcukleri('GELEN FAST - AD SOYAD - kendi hesabım'), ['ad', 'soyad']);
+  });
 }

@@ -23,10 +23,18 @@ String notNormalize(String not) {
       .join(' ');
 }
 
-/// Normalize edilmiş notun sözcükleri; 2 harften kısa olanlar atılır, tekrarlar teke iner.
+/// Banka dökümlerinde her satırda geçen, kategori söylemeyen sözcükler: öğrenilirse ("epos" ->
+/// Market) her kartlı ödemeye aynı kategoriyi önerir.
+const _bankaSozcukleri = {
+  'epos', 'pos', 'fast', 'eft', 'havale', 'gelen', 'giden', 'kendi', 'hesabim', 'hesabima',
+  'gonderme',
+};
+
+/// Normalize edilmiş notun sözcükleri; 2 harften kısa olanlar ve banka sözcükleri atılır,
+/// tekrarlar teke iner.
 List<String> notSozcukleri(String not) => [
   ...{
     for (final s in notNormalize(not).split(' '))
-      if (s.length >= 2) s,
+      if (s.length >= 2 && !_bankaSozcukleri.contains(s)) s,
   },
 ];

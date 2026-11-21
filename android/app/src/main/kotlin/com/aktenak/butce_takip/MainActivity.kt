@@ -47,6 +47,8 @@ class MainActivity : FlutterActivity() {
     /** Paylaşılan PDF'i en çok 5 MB okuyup cacheDir'e yazar; paylaşım niyeti ise true. Kalıcı URI izni alınmaz. */
     private fun paylasimiAl(niyet: Intent?): Boolean {
         if (niyet?.action != Intent.ACTION_SEND || niyet.type != "application/pdf") return false
+        // Son kullanılanlardan yeniden açılış eski paylaşımı tekrar getirir; yok say.
+        if (niyet.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY != 0) return false
         @Suppress("DEPRECATION")
         val uri: Uri? = if (Build.VERSION.SDK_INT >= 33) niyet.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
         else niyet.getParcelableExtra(Intent.EXTRA_STREAM)

@@ -138,3 +138,47 @@ drift_schemas/
 1. Uygulamanın adı ve GitHub repo adı.
 2. Kullanıcı sen misin, başkası mı? Başkasıysa banka SMS'i beklentisi baştan konuşulmalı.
 3. Maaş gününe göre ay başlangıcı v1'e girsin mi (şu an v1.1)?
+
+---
+
+# v0.3.0 planı: toplam bakiye ve hesap dökümü içe aktarma (2026-11-21, taslak)
+
+Arda istedi: bankadan bakiye çekme mümkün değil (lisans gerekir, banka şifresi saklanmaz), onun yerine
+"hem döküm içe aktarma hem tüm bakiyeyi gösterme olsun". İnternet izni ve şema değişikliği yok.
+
+## A. Toplam bakiye (küçük)
+- Özet'in en üstünde ay seçiciden bağımsız kart: **Toplam bakiye = açılış bakiyesi + tüm gelirler − tüm
+  giderler**. Eksi olabilir (kırmızı).
+- Açılış bakiyesi `settings` tablosunda `acilis_bakiye` (kuruş, işaretli int). Yedekle taşınır.
+- Karta dokununca "Bankadaki bakiyen kaç?" girilir (Eksi/Artı anahtarlı); uygulama farkı açılış
+  bakiyesine yazar, işlem eklemez, aylık özetler değişmez.
+- Saf hesap `core/butce.dart`'ta, testli (eksi bakiye, üst sınır, boş veri).
+
+## B. Döküm okuyucu (saf Dart, örnek dosya şart)
+- `lib/ice_aktar/`: dosya baytı → satırlar `(gün, açıklama, tutarKuruş, gelirMi, bakiye?)`.
+- Banka biçimi başlık satırından tanınır; her banka küçük bir eşleme (sütun adları, tarih biçimi,
+  `1.234,56` / `-1.234,56`, borç/alacak ayrı sütun mu).
+- Desteklenen biçim: CSV kesin; XLSX gerekiyorsa bir paket (`excel`) eklenir. Eski `.xls` ve PDF
+  ilk sürümde yok.
+- Testler Arda'nın gönderdiği, tutar ve adları değiştirilmiş örnek dosyalarla (`test/ornekler/`).
+- Tanınmayan dosya: "Bu dosya biçimi tanınmadı", veri değişmez.
+
+## C. Önizleme ve kaydetme
+- Ayarlar → "Hesap dökümü içe aktar" → dosya seç → önizleme listesi: her satırda kategori önerisi
+  (mevcut `kategori_onerici`; öneri yoksa Diğer / Diğer gelir), dokununca kategori değişir, işaret
+  kutusuyla dışarıda bırakılır.
+- **Çift kayıt:** aynı gün + tutar + tür + aynı normalize not zaten varsa satır "zaten var" diye işaretsiz
+  gelir. Aynı dosyayı iki kez aktarmak ikinci kez bir şey eklemez.
+- "N işlemi ekle" tek transaction'da yazar; seçilen kategoriler anahtar kelime öğrenimine sayılır.
+- Dökümde bakiye sütunu varsa sonunda: "Bankaya göre bakiyen X. Toplam bakiyeyi buna eşitle?"
+- Bütçe aşım bildirimi içe aktarmada toplu tek kez değerlendirilir (her satır için ayrı bildirim yok).
+
+## D. Güvenlik ve yayın
+- Güvenlik incelemesi `guvenlik/incelemeler/v0.3.0.md` (yeni yüzey: dışarıdan dosya ayrıştırma; boyut
+  sınırı 5 MB, satır sınırı, tutar `paraUstSinirKurus`, tarih 2000–2100).
+- 0.3.0+3, etiket, taslak release; yayımlamak Arda'da. Emülatörde v0.2.0 üstüne güncelleyiciyle kurulum
+  ilk kez uçtan uca denenir.
+
+## Açık
+- Bankalar: **Ziraat Bankası ve Yapı Kredi** (Arda seçti). Her birinden örnek döküm dosyası gerekli
+  (biçimi bilinmiyor); örnek gelmeden B başlamaz, A beklemeden yapılabilir.

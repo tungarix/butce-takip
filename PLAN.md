@@ -182,3 +182,15 @@ Arda istedi: bankadan bakiye çekme mümkün değil (lisans gerekir, banka şifr
 ## Açık
 - Bankalar: **Ziraat Bankası ve Yapı Kredi** (Arda seçti). Her birinden örnek döküm dosyası gerekli
   (biçimi bilinmiyor); örnek gelmeden B başlamaz, A beklemeden yapılabilir.
+
+### Yapı Kredi PDF bulguları (21 Kas, Arda'nın gerçek dökümü; dosya depoya ALINMAZ)
+- "Hesap Hareketleri" PDF'i, tek sayfa, metin katmanı var (iTextSharp). Başlıkta hesap bilgileri ve
+  "Kullanılabilir Bakiye"; tablo sütunları: Tarih (`dd/MM/yyyy`), Saat, İşlem, Kanal, Açıklama
+  (satır kırılabiliyor), İşlem Tutarı (`-412,32 TL` / `4.000,00 TL`), Bakiye (`6.479,50 TL`).
+- Yeni hareket en üstte. Başta "Bekleyen İşlemler 0,00 TL" sahte satırı var, atlanmalı.
+- **Türkçe harfler metin katmanında kayıp** (fontta ToUnicode yok, `ş/ğ/ı/İ/Ü` → `�`). Mağaza adları
+  çoğunlukla ASCII büyük harf (`EPOS SPOTIFY*PREMIUM`), kategori önerisi için yeterli.
+- "GELEN FAST - <ad> - kendi hesabım" gibi kendi hesaplar arası aktarım gelir değildir: önizlemede
+  işaretsiz gelmeli ya da kullanıcı çıkarabilmeli.
+- PDF okumak Flutter'da yerel PDF motoru paketi ister (ör. pdfium tabanlı); Excel varsa saf Dart
+  `excel` paketi daha hafif. Karar Excel seçeneğinin olup olmadığına bağlı.

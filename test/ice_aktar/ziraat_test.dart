@@ -154,4 +154,38 @@ void main() {
     expect(ziraatOku(yk), isNull);
     expect(yapiKrediOku(_ornek()), isNull);
   });
+
+  test('OCR kuruş virgülünü nokta okursa ("1.000.00", "-253.44") yine doğru', () {
+    final d = ziraatOku(
+      _ornek(metin: (p) => p.t == '1.000,00' ? '1.000.00' : (p.t == '-253,44' ? '-253.44' : p.t)),
+    )!;
+    _dogrula(d);
+  });
+
+  test('tek satır kalsa bile atlanan satır varsa tutarsız (toplam denetimi yapılamaz)', () {
+    // Gerçek dökümde görüldü: 2 satırdan biri okunamayınca zincir ve toplam denetimi atlanıyordu.
+    final d = ziraatOku(
+      _ornek(metin: (p) => const {'1.000,00', '-253,44', '-100,00'}.contains(p.t) ? 'x?' : p.t),
+    )!;
+    expect(d.satirlar, hasLength(1));
+    expect(d.atlanan, greaterThan(0));
+    expect(d.tutarsiz, isTrue);
+  });
+
+  test('gerçek ML Kit kutu geometrisi: 2 satır, nokta okunan kuruş, toplamlar tutarlı', () {
+    final j = jsonDecode(File('test/ornekler/ziraat_mlkit_kutular.json').readAsStringSync());
+    final d = ziraatOku([
+      for (final k in j['kelimeler'] as List)
+        MetinParcasi((k['x'] as num).toDouble(), (k['y'] as num).toDouble(),
+            (k['w'] as num).toDouble(), (k['h'] as num).toDouble(), k['t'] as String),
+    ])!;
+    expect(d.ocr, isTrue);
+    expect(d.atlanan, 0);
+    expect(d.tutarsiz, isFalse);
+    expect([for (final s in d.satirlar) (s.gun, s.tutarKurus, s.gelir, s.bakiyeKurus)], [
+      (20261121, 50000, true, 72800),
+      (20261030, 41200, false, 22800),
+    ]);
+    expect(d.sonBakiyeKurus, 72800);
+  });
 }

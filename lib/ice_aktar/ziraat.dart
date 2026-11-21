@@ -19,9 +19,13 @@ double _oy(MetinParcasi p) => p.y + p.h / 2;
 double _ox(MetinParcasi p) => p.x + p.w / 2;
 
 int? _kurus(String t) {
-  final m = _tutarRe.firstMatch(
-    t.replaceAll(RegExp(r'\s+'), '').replaceAll(RegExp('[–−—]'), '-'),
-  );
+  var temiz = t.replaceAll(RegExp(r'\s+'), '').replaceAll(RegExp('[–−—]'), '-');
+  // OCR kuruş virgülünü nokta okuyabiliyor ('983.26'); tutarlar hep 2 kuruş basamaklı ve
+  // virgüllü yazıldığından virgülsüz '.dd' sonu kuruştur. Yanlış okumayı zincir/toplam yakalar.
+  if (!temiz.contains(',')) {
+    temiz = temiz.replaceFirstMapped(RegExp(r'\.(\d{2})$'), (m) => ',${m[1]}');
+  }
+  final m = _tutarRe.firstMatch(temiz);
   if (m == null) return null;
   final v = int.tryParse('${m[2]!.replaceAll('.', '')}${m[3]}');
   if (v == null) return null;
@@ -206,7 +210,8 @@ Dokum? ziraatOku(List<MetinParcasi> kelimeler) {
     satirlar: satirlar,
     sonBakiyeKurus: satirlar.isEmpty ? null : satirlar.first.bakiyeKurus,
     atlanan: atlanan,
-    tutarsiz: tutarsiz,
+    // Atlanan satır varsa toplam denetimi yapılamaz; görüntüden okunan dökümde güvenilmez say.
+    tutarsiz: tutarsiz || atlanan > 0,
     ocr: true,
   );
 }
